@@ -1,8 +1,9 @@
-import { CreateUserResponse } from './types'
+import { CreateUserResponse, LoginResponse, LoggedInUserData } from './types'
 import { User } from '../entity/User'
 import { SignupDto } from '../dto'
 import { DateTime } from 'luxon'
 import bcrypt from 'bcrypt'
+import { LoginDto } from '../dto/auth/login.dto'
 
 export const signup = async (
   userDto: SignupDto
@@ -42,7 +43,13 @@ export const signup = async (
   }
 }
 
-export const login = async () => {
+export const login = async (dto: LoginDto): Promise<LoginResponse> => {
+  return {
+    token: '',
+    refreshToken: '',
+    status: 201,
+    userData: { email: '', username: '' },
+  }
   // Validate the user's credentials
   // Generate JWT token and refresh token if valid
   // Return the tokens
