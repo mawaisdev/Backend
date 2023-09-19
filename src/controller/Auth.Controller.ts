@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { ValidateSignUpDto } from '../utils/scheme.validator'
+import { ValidateSignUpDto, ValidateLoginDto } from '../utils/scheme.validator'
 import * as authService from '../service/authService'
 
 export const signup = async (req: Request, res: Response) => {
@@ -33,7 +33,7 @@ export const signup = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
   try {
-    const { errors: validationErrors, dto: loginDto } = await ValidateSignUpDto(
+    const { errors: validationErrors, dto: loginDto } = await ValidateLoginDto(
       req.body
     )
 
@@ -52,15 +52,24 @@ export const login = async (req: Request, res: Response) => {
       token,
       refreshToken,
       userData,
-      error: serviceErrors,
+      error: serviceErrors = '',
       status,
-    } = await authService.login(loginDto)
+    } = await authService.login(loginDto, req)
 
-    if (serviceErrors) {
-      return res.status(400).json({ errors: serviceErrors })
+    if (serviceErrors && status) {
+      return res.status(status).json({ errors: serviceErrors })
     }
 
-    return res.status(201).json({ token, refreshToken, status, userData })
+    const isProduction = process.env.NODE_ENV === 'production'
+
+    res.cookie('jwt', refreshToken, {
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000,
+      secure: isProduction,
+    })
+    return res
+      .status(201)
+      .json({ token, status, userData, errors: serviceErrors })
   } catch (error) {
     console.error('Login error:', error)
     return res.status(500).json({
@@ -71,4 +80,17 @@ export const login = async (req: Request, res: Response) => {
 
 export const logout = async (req: Request, res: Response) => {}
 
-export const refreshToken = async (req: Request, res: Response) => {}
+export const refreshToken = async (req: Request, res: Response) => {
+  const cookies = req.cookies
+  if (!cookies?.jwt) return res.sendStatus(401)
+  const tokenFromCookies = cookies.jwt
+  const { errors, status, token } = await authService.refreshToken(
+    tokenFromCookies
+  )
+
+  if (errors && status) {
+    return res.status(status).json({ errors, status, token: '' })
+  }
+
+  return res.status(status ? status : 201).json({ token })
+}
