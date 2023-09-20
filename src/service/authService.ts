@@ -15,13 +15,16 @@ import bcrypt from 'bcrypt'
 import { LoginDto } from '../dto/auth/login.dto'
 import { RefreshToken } from '../entity/RefreshToken'
 import { generateJwt } from '../utils/jwt-helpers'
+import { UserRole } from '../config/userRoles'
 
 const MAX_LOGGED_DEVICES = Number(process.env.MAX_LOGIN_ALLOWED) || 3
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || ''
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || ''
 const ACCESS_TOKEN_EXPIRES_IN = process.env.ACCESS_TOKEN_EXPIRES_IN || '60s'
-const REFRESH_TOKEN_EXPIRES_IN = process.env.REFRESH_TOKEN_EXPIRES_IN || '1d'
+const REFRESH_TOKEN_EXPIRES_IN =
+  process.env.REFRESH_TOKEN_EXPIRES_IN || '86400s'
+const region = process.env.Region || 'UTC' // Default to 'UTC' if not set
 
 export const signup = async (
   userDto: SignupDto
@@ -38,7 +41,7 @@ export const signup = async (
       return { errors: 'User with this email or username already exists' }
     }
 
-    const currentDate = DateTime.now().setZone('UTC').toJSDate()
+    const currentDate = DateTime.now().setZone(region).toJSDate()
     const hashedPassword = await hashPassword(password)
 
     const user = User.create({
@@ -46,6 +49,7 @@ export const signup = async (
       lastName,
       userName,
       email,
+      role: UserRole.User,
       password: hashedPassword,
       createdAt: currentDate,
       updatedAt: currentDate,
@@ -91,10 +95,14 @@ export const login = async (
       refreshTokenData = await createNewRefreshToken(user, clientIp)
     }
 
+    // Update User's last login time
+    user.lastLogin = DateTime.now().setZone(region).toJSDate()
+    await user.save()
+
     return {
       token,
       refreshToken: refreshTokenData.token,
-      userData: { email: user.email, username: user.userName },
+      userData: { email: user.email, username: user.userName, role: user.role },
       status: 201,
     }
   } catch (error) {
@@ -202,8 +210,18 @@ const createNewRefreshToken = async (user: User, ip: string) => {
     REFRESH_TOKEN_SECRET,
     REFRESH_TOKEN_EXPIRES_IN
   )
+
+  // Extracting the number of seconds from the string.
+  const durationInSeconds = parseInt(
+    REFRESH_TOKEN_EXPIRES_IN.replace('s', ''),
+    10
+  )
+
   const currentDate = DateTime.now().setZone('UTC').toJSDate()
-  const expiryDate = DateTime.now().setZone('UTC').plus({ days: 1 }).toJSDate()
+  const expiryDate = DateTime.now()
+    .setZone('UTC')
+    .plus({ seconds: durationInSeconds })
+    .toJSDate()
 
   const refreshToken = RefreshToken.create({
     token: tokenValue,

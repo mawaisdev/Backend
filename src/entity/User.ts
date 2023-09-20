@@ -16,6 +16,7 @@ import {
   IsOptional,
 } from 'class-validator'
 import { RefreshToken } from './RefreshToken'
+import { UserRole } from '../config/userRoles'
 
 @Entity()
 export class User extends BaseEntity {
@@ -59,6 +60,14 @@ export class User extends BaseEntity {
   @IsOptional()
   @IsDate()
   lastLogin: Date
+
+  @IsOptional()
+  @Column({
+    type: 'enum',
+    enum: UserRole,
+    default: UserRole.User,
+  })
+  role: UserRole
 
   @Column({ default: false })
   @IsBoolean()

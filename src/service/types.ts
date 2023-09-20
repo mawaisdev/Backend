@@ -1,3 +1,4 @@
+import { UserRole } from '../config/userRoles'
 import { User } from '../entity/User'
 import { Request } from 'express'
 
@@ -23,6 +24,7 @@ export type LoginResponse = {
 export type LoggedInUserData = {
   username: string
   email: string
+  role: UserRole
 }
 
 export type LogoutResponse = {

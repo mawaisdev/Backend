@@ -25,9 +25,13 @@ export const generateJwt = (
   secret: string,
   expiresIn: string
 ): string => {
-  return jwt.sign({ username: user.userName, email: user.email }, secret, {
-    expiresIn,
-  })
+  return jwt.sign(
+    { username: user.userName, email: user.email, role: user.role },
+    secret,
+    {
+      expiresIn,
+    }
+  )
 }
 
 /**
