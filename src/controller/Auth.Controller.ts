@@ -5,8 +5,6 @@ import * as authService from '../service/authService'
 const JWT_COOKIE_MAX_AGE =
   Number(process.env.JWT_COOKIE_MAX_AGE) || 24 * 60 * 60
 
-const isProduction = process.env.NODE_ENV === 'production'
-
 export const signup = async (req: Request, res: Response) => {
   try {
     const { errors: validationErrors, dto: signupDto } =
@@ -68,7 +66,8 @@ export const login = async (req: Request, res: Response) => {
     res.cookie('jwt', refreshToken, {
       httpOnly: true,
       maxAge: JWT_COOKIE_MAX_AGE,
-      secure: isProduction,
+      secure: true,
+      sameSite: 'none',
     })
     return res
       .status(201)
@@ -115,8 +114,8 @@ export const logout = async (req: Request, res: Response) => {
     // Clear the JWT cookie since logout was successful.
     res.clearCookie('jwt', {
       httpOnly: true,
-      maxAge: JWT_COOKIE_MAX_AGE,
-      secure: isProduction,
+      secure: true,
+      sameSite: 'none',
     })
 
     return res.sendStatus(204) // Logout successful, No Content to send back.
