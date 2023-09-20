@@ -9,12 +9,9 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Launch via Nodemon",
-      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/nodemon",
-      "runtimeArgs": ["-r", "ts-node/register"],
-      "args": ["${workspaceFolder}/src/server.ts"],
-      "restart": true,
-      "console": "integratedTerminal",
+      "name": "Debugg",
+      "runtimeExecutable": "${workspaceFolder}/start-ngrok.sh",
+      "console": "integratedTerminal", // This ensures nodemon starts in the VS Code terminal
       "internalConsoleOptions": "neverOpen",
       "skipFiles": ["<node_internals>/**"],
       "env": {

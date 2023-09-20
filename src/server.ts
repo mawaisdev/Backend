@@ -17,7 +17,7 @@ async function initializeApp() {
     const app = express()
     // Enable express to get X-forwarded-to address
     app.set('trust proxy', true)
-    app.use(morgan('combined'))
+    app.use(morgan('dev'))
     app.use(express.json())
     //middleware for cookies
     app.use(cookiesParser())

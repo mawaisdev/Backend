@@ -25,6 +25,10 @@ export type LoggedInUserData = {
   email: string
 }
 
+export type LogoutResponse = {
+  errors?: string
+}
+
 export interface ExtendedRequest extends Request {
   user?: LoggedInUserData // You might have used another type here
 }

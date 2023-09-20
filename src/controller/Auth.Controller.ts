@@ -2,6 +2,11 @@ import { Request, Response } from 'express'
 import { ValidateSignUpDto, ValidateLoginDto } from '../utils/scheme.validator'
 import * as authService from '../service/authService'
 
+const JWT_COOKIE_MAX_AGE =
+  Number(process.env.JWT_COOKIE_MAX_AGE) || 24 * 60 * 60
+
+const isProduction = process.env.NODE_ENV === 'production'
+
 export const signup = async (req: Request, res: Response) => {
   try {
     const { errors: validationErrors, dto: signupDto } =
@@ -60,11 +65,9 @@ export const login = async (req: Request, res: Response) => {
       return res.status(status).json({ errors: serviceErrors })
     }
 
-    const isProduction = process.env.NODE_ENV === 'production'
-
     res.cookie('jwt', refreshToken, {
       httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000,
+      maxAge: JWT_COOKIE_MAX_AGE,
       secure: isProduction,
     })
     return res
@@ -77,8 +80,6 @@ export const login = async (req: Request, res: Response) => {
     })
   }
 }
-
-export const logout = async (req: Request, res: Response) => {}
 
 export const refreshToken = async (req: Request, res: Response) => {
   const cookies = req.cookies
@@ -93,4 +94,36 @@ export const refreshToken = async (req: Request, res: Response) => {
   }
 
   return res.status(status ? status : 201).json({ token })
+}
+
+export const logout = async (req: Request, res: Response) => {
+  try {
+    const cookies = req.cookies
+    const tokenFromCookies = cookies?.jwt
+
+    if (!tokenFromCookies) {
+      return res.sendStatus(204) // No JWT token in the cookie, nothing to do.
+    }
+
+    const { errors } = await authService.logout(tokenFromCookies)
+
+    if (errors) {
+      console.warn('Logout warning:', errors) // Log the warning for tracking if needed.
+      return res.sendStatus(204) // No Content but consider sending a 400 Bad Request if you think it's an error scenario.
+    }
+
+    // Clear the JWT cookie since logout was successful.
+    res.clearCookie('jwt', {
+      httpOnly: true,
+      maxAge: JWT_COOKIE_MAX_AGE,
+      secure: isProduction,
+    })
+
+    return res.sendStatus(204) // Logout successful, No Content to send back.
+  } catch (error) {
+    console.error('Logout error:', error) // Fixed the logging text.
+    return res.status(500).json({
+      message: 'An unexpected error occurred while processing your request.',
+    })
+  }
 }

@@ -5,6 +5,7 @@ import {
   CreateUserResponse,
   LoggedInUserData,
   LoginResponse,
+  LogoutResponse,
   RefreshTokenValidateResponse,
 } from './types'
 import { User } from '../entity/User'
@@ -102,9 +103,25 @@ export const login = async (
   }
 }
 
-export const logout = async (refreshToken: string) => {
-  // Invalidate the refresh token
-  // Any other cleanup tasks when logging out
+export const logout = async (
+  tokenFromCookies: string
+): Promise<LogoutResponse> => {
+  const refreshToken = await RefreshToken.findOne({
+    where: {
+      token: tokenFromCookies,
+    },
+  })
+
+  if (!refreshToken) {
+    return { errors: 'Token Not Found in DB' }
+  }
+
+  // Remove token from the database
+  await refreshToken.remove()
+
+  // Any other cleanup tasks when logging out can be added here
+
+  return { errors: undefined }
 }
 
 export const refreshToken = async (
@@ -202,6 +219,7 @@ const createNewRefreshToken = async (user: User, ip: string) => {
 
 const getIp = (req: Request): string => {
   const forwardedIps = req.headers['x-forwarded-for']
+
   if (typeof forwardedIps === 'string') {
     return forwardedIps.split(',')[0].trim()
   } else if (Array.isArray(forwardedIps) && forwardedIps.length) {
