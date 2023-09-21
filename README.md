@@ -68,8 +68,31 @@
 
 ## Dependencies
 
-- **Express**: For setting up the server.
-- **JWT**: For authentication.
-- **Morgan**: For logging HTTP requests.
-- **Class-validator & class-transformer**: For validation and data transformation.
-- **Cookie-parser**: For parsing cookies.
+- **bcrypt**: For password hashing and comparison.
+- **class-transformer**: Transforms plain objects to classes and vice versa.
+- **class-validator**: For validation of data.
+- **cookie-parser**: Middleware to parse cookies.
+- **cors**: Middleware to enable CORS with various options.
+- **dotenv**: Loads environment variables from a `.env` file.
+- **express**: Web application framework for creating the server.
+- **jsonwebtoken**: For creating JWT tokens for authentication.
+- **luxon**: Library for working with dates and times.
+- **morgan**: HTTP request logger middleware.
+- **pg**: PostgreSQL client for Node.js.
+- **reflect-metadata**: Allows defining metadata on objects.
+- **typeorm**: ORM for handling database operations.
+
+## Environment Variables
+
+For the application to function correctly, the following environment variables need to be set in the `.env` file:
+
+- **ACCESS_TOKEN_SECRET**: Your secret for creating JWT access tokens.
+- **REFRESH_TOKEN_SECRET**: Your secret for creating JWT refresh tokens.
+- **PORT**: Port number for the application to listen on. E.g., `4000`.
+- **MAX_LOGIN_ALLOWED**: Maximum number of concurrent logins allowed. E.g., `3`.
+- **ACCESS_TOKEN_EXPIRES_IN**: Duration for the access token to expire, always in seconds. E.g., `300s`.
+- **REFRESH_TOKEN_EXPIRES_IN**: Duration for the refresh token to expire, always in seconds. E.g., `86400s`.
+- **JWT_COOKIE_MAX_AGE**: Maximum age for the JWT cookie, in milliseconds. E.g., `24 * 60 * 60 * 1000`.
+- **Region**: Region for datetime calculations. E.g., `'Asia/Karachi'`.
+
+> **Note**: Always ensure to keep your secrets private and never commit them to source control.
