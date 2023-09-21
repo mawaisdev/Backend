@@ -92,7 +92,3 @@ For the application to function correctly, the following environment variables n
 - **Region**: Region for datetime calculations. E.g., `'Asia/Karachi'`.
 
 > **Note**: Always ensure to keep your secrets private and never commit them to source control.
-
-[<img src="https://cdn.gomix.com/2bdfb3f8-05ef-4035-a06e-2043962a3a13%2Fremix-button.svg" width="163px" />](https://glitch.com/edit/#!/import/github.com/mawaisdev/Backend)
-
-**Deploy by clicking the button above**
