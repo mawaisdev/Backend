@@ -1,28 +1,38 @@
 import { allowedOrigins } from './allowedOrigins'
 import { CorsOptions } from 'cors'
 
-// currently using this as I will get a new address from free version of ng rok
-
+/**
+ * Determines if the provided origin is allowed access based on a predefined list of domains or patterns.
+ *
+ * @param origin - The origin domain of the request.
+ * @returns boolean - Returns true if the origin is allowed; otherwise, false.
+ */
 export const isOriginAllowed = (origin: string): boolean => {
-  // Allow specific domains
+  // Check if the origin is in the list of explicitly allowed origins.
   if (allowedOrigins.includes(origin)) return true
 
-  // Allow any domain containing "ngrok-free.app"
+  // Check if the origin matches the "ngrok-free.app" pattern. This allows for dynamic subdomains under "ngrok-free.app".
   const ngrokPattern = /ngrok-free\.app$/
   if (ngrokPattern.test(origin)) return true
 
+  // If none of the above conditions match, the origin is not allowed.
   return false
 }
 
+/**
+ * CORS configuration for the application.
+ * Uses the `isOriginAllowed` function to determine if an incoming request's origin is permitted.
+ */
 export const corsOptions: CorsOptions = {
   origin: (origin, callback) => {
+    // Check the origin against our `isOriginAllowed` function.
     if (!origin || isOriginAllowed(origin)) {
       callback(null, true)
     } else {
-      callback(new Error('Not allowed by cors'))
+      callback(new Error('Not allowed by CORS'))
     }
   },
-  optionsSuccessStatus: 200,
+  optionsSuccessStatus: 200, // Respond with 200 for preflight requests.
 }
 
 // basic middleware to use in production when I know my full origin address

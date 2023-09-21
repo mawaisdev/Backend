@@ -2,11 +2,13 @@ import {
   IsAlpha,
   IsAlphanumeric,
   IsEmail,
+  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
   Length,
 } from 'class-validator'
+import { UserRole } from '../../config/userRoles'
 
 export class SignupDto {
   @IsString()
@@ -30,4 +32,7 @@ export class SignupDto {
   @IsString()
   @Length(6, 50)
   password: string = ''
+
+  @IsEnum(UserRole)
+  role: UserRole.User
 }

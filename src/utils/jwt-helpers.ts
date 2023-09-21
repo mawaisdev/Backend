@@ -4,34 +4,32 @@ import { Response, NextFunction } from 'express'
 import { ExtendedRequest, LoggedInUserData } from '../service/types'
 import { User } from '../entity/User'
 import { RefreshToken } from '../entity/Index'
+import { UserRole } from '../config/userRoles'
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || ''
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || ''
 
 /**
- * Generates a JWT (JSON Web Token) for the given user based on the provided secret and expiration time.
+ * Generates a JWT (JSON Web Token) for a given user with specified parameters.
  *
- * The generated token contains the username and email of the user, ensuring that these
- * details can be retrieved quickly from the token without needing to query the database.
+ * This function creates a token containing essential user information (e.g., username, email, and roles).
+ * Embedding this data in the token can reduce the need for database lookups during authentication/authorization processes.
  *
- * @param user - The user for whom the JWT is to be generated.
- * @param secret - The secret key used to sign the JWT, ensuring its integrity and authenticity.
- * @param expiresIn - The duration for which the JWT is valid.
- *                    This is expressed as a string describing a time span (e.g., '1h' for 1 hour, '7d' for 7 days).
- * @returns The generated JWT as a string.
+ * @param {User} user - The target user for the JWT.
+ * @param {string} secret - Secret key for signing the JWT.
+ * @param {string} expiresIn - Token's validity duration (e.g., '1h', '7d').
+ * @param {UserRole} [roles] - Optional roles associated with the user.
+ * @returns {string} - Generated JWT.
  */
 export const generateJwt = (
-  user: User,
+  { userName, email }: User,
   secret: string,
-  expiresIn: string
+  expiresIn: string,
+  roles?: UserRole
 ): string => {
-  return jwt.sign(
-    { username: user.userName, email: user.email, role: user.role },
-    secret,
-    {
-      expiresIn,
-    }
-  )
+  const payload = roles ? { userName, email, roles } : { userName, email }
+
+  return jwt.sign(payload, secret, { expiresIn })
 }
 
 /**

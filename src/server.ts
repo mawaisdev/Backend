@@ -1,4 +1,5 @@
 import { config } from 'dotenv'
+// Load environment variables from .env file.
 config()
 
 import express from 'express'
@@ -15,40 +16,51 @@ import { credentials } from './middleware/credentials'
 
 async function initializeApp() {
   try {
+    // Initialize data source (e.g., database connection).
     await AppDataSource.initialize()
 
+    // Create an instance of an Express application.
     const app = express()
 
-    // Enable express to get X-forwarded-to address
+    // Enable Express to trust proxy headers (e.g., X-Forwarded-For).
     app.set('trust proxy', true)
 
-    // Logger
+    // Use Morgan for logging HTTP requests.
     app.use(morgan('dev'))
 
-    //Handle options credentials check - before cors
-    //and fetch cookies credential requirements
+    // Middleware to set credentials headers for allowed origins.
     app.use(credentials)
 
-    //Cross Origin Resource Sharing
+    // Apply CORS (Cross-Origin Resource Sharing) configuration.
     app.use(cors(corsOptions))
 
-    // build in middleware for json
+    // Middleware to parse JSON payloads.
     app.use(express.json())
-    //middleware for cookies
+
+    // Middleware to parse cookies.
     app.use(cookiesParser())
 
+    // Define the port on which the app should run.
     const PORT = process.env.PORT || 4000
 
+    // Authentication routes.
     app.use('/auth', authRouter)
 
+    // Apply JWT verification middleware.
     app.use(verifyJWT)
+
+    // Routes for posts.
     app.use('/posts', postRouter)
 
+    // Start the Express server on the specified port.
     app.listen(PORT, () => {
       console.log(`Express server has started on port ${PORT}`)
     })
   } catch (error) {
-    console.log(error)
+    // Log any unexpected errors during initialization.
+    console.error('Error during app initialization:', error)
   }
 }
+
+// Start the application.
 initializeApp()

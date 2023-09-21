@@ -1,6 +1,24 @@
+// External libraries
 import { Request } from 'express'
 import jwt from 'jsonwebtoken'
+import { DateTime } from 'luxon'
 
+// Internal constants and utilities
+import {
+  ACCESS_TOKEN_EXPIRES_IN,
+  ACCESS_TOKEN_SECRET,
+  REFRESH_TOKEN_SECRET,
+  region,
+} from './helpers/constants'
+import { generateJwt } from '../utils/jwt-helpers'
+
+// DTOs (Data Transfer Objects)
+import { SignupDto, LoginDto } from '../dto'
+
+// Entities
+import { User, RefreshToken } from '../entity/Index'
+
+// Types
 import {
   CreateUserResponse,
   LoggedInUserData,
@@ -8,102 +26,152 @@ import {
   LogoutResponse,
   RefreshTokenValidateResponse,
 } from './types'
-import { User } from '../entity/User'
-import { SignupDto } from '../dto'
-import { DateTime } from 'luxon'
-import bcrypt from 'bcrypt'
-import { LoginDto } from '../dto/auth/login.dto'
-import { RefreshToken } from '../entity/RefreshToken'
-import { generateJwt } from '../utils/jwt-helpers'
-import { UserRole } from '../config/userRoles'
+import {
+  hashPassword,
+  validateUser,
+  isValidPassword,
+  getIp,
+  findRefreshTokenForUserAndIp,
+  hasMaxLoggedDevices,
+  createNewRefreshToken,
+} from './helpers/authHelpers'
 
-const MAX_LOGGED_DEVICES = Number(process.env.MAX_LOGIN_ALLOWED) || 3
-
-const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || ''
-const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || ''
-const ACCESS_TOKEN_EXPIRES_IN = process.env.ACCESS_TOKEN_EXPIRES_IN || '60s'
-const REFRESH_TOKEN_EXPIRES_IN =
-  process.env.REFRESH_TOKEN_EXPIRES_IN || '86400s'
-const region = process.env.Region || 'UTC' // Default to 'UTC' if not set
-
+/**
+ * Handles user signup functionality.
+ *
+ * @param userDto - The user data transfer object containing all necessary information for registration.
+ * @returns A promise resolving to the created user response or an error if the signup fails.
+ */
 export const signup = async (
   userDto: SignupDto
 ): Promise<CreateUserResponse> => {
   try {
-    const { userName, email, firstName, lastName = '', password } = userDto
+    const {
+      userName,
+      email,
+      firstName,
+      lastName = '',
+      password,
+      role,
+    } = userDto
 
-    // Check if user exists based on username or email
+    // Search for existing users by username or email.
     const userExist = await User.findOne({
       where: [{ userName: userName }, { email: email }],
     })
 
+    // If a matching user is found, abort the signup and return an error.
     if (userExist) {
-      return { errors: 'User with this email or username already exists' }
+      return {
+        errors: 'User with this email or username already exists',
+        user: undefined,
+      }
     }
 
+    // Generate the current date in the specified time zone.
     const currentDate = DateTime.now().setZone(region).toJSDate()
+
+    // Hash the user's password for security.
     const hashedPassword = await hashPassword(password)
 
+    // Create a new user entity with the provided details.
     const user = User.create({
       firstName,
       lastName,
       userName,
       email,
-      role: UserRole.User,
+      role,
       password: hashedPassword,
       createdAt: currentDate,
       updatedAt: currentDate,
       lastLogin: currentDate,
     })
 
+    // Persist the user entity to the database.
     await user.save()
 
-    return { user }
+    return { errors: undefined, user }
   } catch (error) {
     console.error('Signup error:', error)
     throw new Error('An unexpected error occurred during signup.')
   }
 }
 
+/**
+ * Authenticates a user using their provided credentials.
+ * If authentication is successful, generates JWT and possibly refresh token.
+ *
+ * @param {LoginDto} credentials - The username and password of the user attempting to log in.
+ * @param {Request} req - The Express request object.
+ * @returns {Promise<LoginResponse>} - The response containing token, refresh token, error, status, and user data.
+ */
 export const login = async (
   { userName, password }: LoginDto,
   req: Request
 ): Promise<LoginResponse> => {
   try {
+    // Validate the user's credentials.
     const user = await validateUser({ userName, password })
-    if (!user) return { status: 404, error: 'User Not Exist' }
-
-    if (!(await isValidPassword(password, user.password))) {
-      return { status: 401, error: 'Invalid Credentials' }
+    if (!user) {
+      return {
+        token: undefined,
+        refreshToken: undefined,
+        userData: undefined,
+        status: 404,
+        error: 'User Not Exist',
+      }
     }
 
+    // Verify the user's password.
+    if (!(await isValidPassword(password, user.password))) {
+      return {
+        token: undefined,
+        refreshToken: undefined,
+        userData: undefined,
+        status: 401,
+        error: 'Invalid Credentials',
+      }
+    }
+
+    // Generate the JWT for the authenticated user.
     const token = generateJwt(
       user,
       ACCESS_TOKEN_SECRET,
-      ACCESS_TOKEN_EXPIRES_IN
+      ACCESS_TOKEN_EXPIRES_IN,
+      user.role
     )
+
+    // Retrieve the client's IP address.
     const clientIp = getIp(req)
 
-    // Fetch existing refresh token
+    // Attempt to retrieve an existing refresh token for the user and IP.
     let refreshTokenData = await findRefreshTokenForUserAndIp(user, clientIp)
 
-    // If refresh token doesn't exist, check if we can create a new one
+    // If no refresh token exists and user is under their device limit, create a new one.
     if (!refreshTokenData) {
       if (await hasMaxLoggedDevices(user)) {
-        return { error: 'Maximum logged devices reached', status: 405 }
+        return {
+          token: undefined,
+          refreshToken: undefined,
+          userData: undefined,
+          status: 405,
+          error: 'Maximum logged devices reached',
+        }
       }
       refreshTokenData = await createNewRefreshToken(user, clientIp)
     }
 
-    // Update User's last login time
+    // Update the user's last login timestamp.
     user.lastLogin = DateTime.now().setZone(region).toJSDate()
     await user.save()
 
+    // Return a success response with the token, refresh token, and user data.
     return {
       token,
       refreshToken: refreshTokenData.token,
-      userData: { email: user.email, username: user.userName, role: user.role },
+      userData: { email: user.email, userName: user.userName, role: user.role },
       status: 201,
+      error: undefined,
     }
   } catch (error) {
     console.error('Login Service Error:', error)
@@ -111,30 +179,44 @@ export const login = async (
   }
 }
 
+/**
+ * De-authenticates a user by invalidating their refresh token.
+ *
+ * @param {string} tokenFromCookies - The token obtained from user cookies.
+ * @returns {Promise<LogoutResponse>} - The response containing possible error message.
+ */
 export const logout = async (
   tokenFromCookies: string
 ): Promise<LogoutResponse> => {
+  // Find the refresh token in the database.
   const refreshToken = await RefreshToken.findOne({
     where: {
       token: tokenFromCookies,
     },
   })
 
+  // If the token is not found, return an error.
   if (!refreshToken) {
     return { errors: 'Token Not Found in DB' }
   }
 
-  // Remove token from the database
+  // Delete the token from the database.
   await refreshToken.remove()
 
-  // Any other cleanup tasks when logging out can be added here
-
+  // Return a success response.
   return { errors: undefined }
 }
 
+/**
+ * Refreshes the JWT for a user using their refresh token.
+ *
+ * @param {string} tokenFromCookies - The refresh token obtained from user cookies.
+ * @returns {Promise<RefreshTokenValidateResponse>} - The response containing possible error message, status, and new JWT token.
+ */
 export const refreshToken = async (
   tokenFromCookies: string
 ): Promise<RefreshTokenValidateResponse> => {
+  // Find the refresh token and associated user in the database.
   const refreshToken = await RefreshToken.findOne({
     where: {
       token: tokenFromCookies,
@@ -142,107 +224,48 @@ export const refreshToken = async (
     relations: ['user'],
   })
 
+  // If the user associated with the refresh token doesn't exist, return an error.
   const user = refreshToken ? refreshToken.user : null
-  if (!user) return { errors: 'Invalid Token', status: 403 }
-
-  // Validate the refresh token
-  if (!REFRESH_TOKEN_SECRET || !ACCESS_TOKEN_SECRET) {
-    return { errors: 'Secret not provided', status: 500 }
+  if (!user) {
+    return { errors: 'Invalid Token', status: 403, token: undefined }
   }
+
+  // Ensure both refresh and access token secrets are available.
+  if (!REFRESH_TOKEN_SECRET || !ACCESS_TOKEN_SECRET) {
+    return { errors: 'Secret not provided', status: 500, token: undefined }
+  }
+
+  // Validate the refresh token and generate a new JWT if valid.
   return new Promise((resolve) => {
     jwt.verify(tokenFromCookies, REFRESH_TOKEN_SECRET, (error, decoded) => {
       if (error) {
-        resolve({ errors: 'Token verification failed', status: 400 })
+        resolve({
+          errors: 'Token verification failed',
+          status: 400,
+          token: undefined,
+        })
         return
       }
 
-      const { username } = decoded as LoggedInUserData
+      const { userName } = decoded as LoggedInUserData
 
-      if (user.userName !== username) {
-        resolve({ errors: 'Invalid User', status: 400 })
+      // Ensure the user from the decoded token matches the found user.
+      if (user.userName !== userName) {
+        console.log('User: ', user.userName === userName)
+        console.log('Decoded Data: ', decoded)
+        console.log('User Data: ', user.userName)
+        resolve({ errors: 'Invalid User', status: 400, token: undefined })
         return
       }
 
-      // If valid, generate a new JWT token and return it
+      // Generate a new JWT for the valid user.
       const accessToken = generateJwt(
         user,
         ACCESS_TOKEN_SECRET,
-        ACCESS_TOKEN_EXPIRES_IN
+        ACCESS_TOKEN_EXPIRES_IN,
+        user.role
       )
-      resolve({ errors: '', status: 201, token: accessToken })
+      resolve({ errors: undefined, status: 201, token: accessToken })
     })
   })
-}
-
-// Helper Functions
-
-const hashPassword = async (password: string): Promise<string> => {
-  const salt = await bcrypt.genSalt(10)
-  const hashedPassword = await bcrypt.hash(password, salt)
-  return hashedPassword
-}
-
-const validateUser = async (dto: LoginDto) => {
-  return User.findOne({ where: { userName: dto.userName } })
-}
-
-const isValidPassword = async (
-  providedPassword: string,
-  userPassword: string
-) => {
-  return bcrypt.compare(providedPassword, userPassword)
-}
-
-const hasMaxLoggedDevices = async (user: User) => {
-  const count = await RefreshToken.count({ where: { user: { id: user.id } } })
-  return count >= MAX_LOGGED_DEVICES
-}
-
-const findRefreshTokenForUserAndIp = async (user: User, ip: string) => {
-  return await RefreshToken.findOne({
-    where: { user: { id: user.id }, ipAddress: ip },
-  })
-}
-
-const createNewRefreshToken = async (user: User, ip: string) => {
-  const tokenValue = generateJwt(
-    user,
-    REFRESH_TOKEN_SECRET,
-    REFRESH_TOKEN_EXPIRES_IN
-  )
-
-  // Extracting the number of seconds from the string.
-  const durationInSeconds = parseInt(
-    REFRESH_TOKEN_EXPIRES_IN.replace('s', ''),
-    10
-  )
-
-  const currentDate = DateTime.now().setZone('UTC').toJSDate()
-  const expiryDate = DateTime.now()
-    .setZone('UTC')
-    .plus({ seconds: durationInSeconds })
-    .toJSDate()
-
-  const refreshToken = RefreshToken.create({
-    token: tokenValue,
-    user,
-    ipAddress: ip,
-    issuedAt: currentDate,
-    expiresAt: expiryDate,
-  })
-
-  await refreshToken.save()
-  return refreshToken
-}
-
-const getIp = (req: Request): string => {
-  const forwardedIps = req.headers['x-forwarded-for']
-
-  if (typeof forwardedIps === 'string') {
-    return forwardedIps.split(',')[0].trim()
-  } else if (Array.isArray(forwardedIps) && forwardedIps.length) {
-    return forwardedIps[0].split(',')[0].trim()
-  } else {
-    return req.ip
-  }
 }

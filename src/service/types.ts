@@ -22,9 +22,9 @@ export type LoginResponse = {
 }
 
 export type LoggedInUserData = {
-  username: string
+  userName: string
   email: string
-  role: UserRole
+  role?: UserRole
 }
 
 export type LogoutResponse = {
