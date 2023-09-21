@@ -1,5 +1,45 @@
 ## Node JS Project with TypeScript and TYPE ORM
 
+## Setup for Debugging with `ngrok`
+
+To use the provided launch settings, you'll need to set up `ngrok` and configure a few things:
+
+### 1. Setting Up `ngrok`
+
+Firstly, make sure you have `ngrok` installed.
+
+### 2. Create the `start-ngrok.sh` Script
+
+Create a file named `start-ngrok.sh` and paste the following contents:
+
+```bash
+#!/bin/bash
+gnome-terminal -- ngrok http 4000
+
+# Explicitly mention the full path to nodemon
+[projectFolder]/node_modules/.bin/nodemon -r ts-node/register /[projectFolder]/src/server.ts
+```
+
+> **Note**: Make sure to modify the paths according to your system.
+
+### 3. Modify Script Permissions
+
+Change the permissions to make the `.sh` file executable. This can typically be done using the command:
+
+```bash
+chmod +x start-ngrok.sh
+```
+
+### 4. Set Up `launch.json` in `.vscode`
+
+Create (or modify) the `launch.json` file inside the `.vscode` directory of your project and paste the provided configuration.
+
+### 5. Run and Debug
+
+Save all the files. Now, your project should be in debug mode with `ngrok` providing access to anyone.
+
+Happy debugging!
+
 ## VS Code Configuration To Debug Typescript Applications Using Nodemon Easily
 
 ```json
@@ -21,50 +61,6 @@
   ]
 }
 ```
-
-## API Endpoints
-
-### 1. User Signup
-
-- **Endpoint**: `/auth/signup`
-- **Method**: `POST`
-
-| Status Code | Name                  | Description                                     |
-| ----------- | --------------------- | ----------------------------------------------- |
-| 201         | Created               | The user was successfully created.              |
-| 400         | Bad Request           | There were validation errors in the input data. |
-| 500         | Internal Server Error | An unexpected server error occurred.            |
-
-### 2. User Login
-
-- **Endpoint**: `/auth/login`
-- **Method**: `POST`
-
-| Status Code | Name                  | Description                                            |
-| ----------- | --------------------- | ------------------------------------------------------ |
-| 201         | Created               | Login was successful and a new token has been created. |
-| 400         | Bad Request           | There were validation errors or invalid credentials.   |
-| 500         | Internal Server Error | An unexpected server error occurred.                   |
-
-### 3. Refresh Token
-
-- **Endpoint**: `/auth/refreshToken`
-- **Method**: `GET`
-
-| Status Code | Name         | Description                                                     |
-| ----------- | ------------ | --------------------------------------------------------------- |
-| 201         | Created      | A new token was successfully created.                           |
-| 401         | Unauthorized | The user is unauthorized due to a missing or invalid JWT token. |
-
-### 4. Logout
-
-- **Endpoint**: `/auth/logout`
-- **Method**: `POST`
-
-| Status Code | Name                  | Description                          |
-| ----------- | --------------------- | ------------------------------------ |
-| 204         | No Content            | Logout was successful.               |
-| 500         | Internal Server Error | An unexpected server error occurred. |
 
 ## Dependencies
 

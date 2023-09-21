@@ -24,7 +24,7 @@ export type LoginResponse = {
 export type LoggedInUserData = {
   userName: string
   email: string
-  role?: UserRole
+  roles?: UserRole
 }
 
 export type LogoutResponse = {

@@ -4,4 +4,6 @@ export const getAllPosts = (req: Request, res: Response) => {
   return res.status(200).json({ data: { name: 'Post 1' } })
 }
 
-export const getPostById = {}
+export const addPost = (req: Request, res: Response) => {
+  return res.status(200).json({ message: 'Post added' })
+}

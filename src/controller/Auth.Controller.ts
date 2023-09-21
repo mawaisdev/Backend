@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import { ValidateSignUpDto, ValidateLoginDto } from '../utils/scheme.validator'
 import * as authService from '../service/authService'
+import { IS_PRODUCTION } from '../service/helpers/constants'
 
 const JWT_COOKIE_MAX_AGE =
   Number(process.env.JWT_COOKIE_MAX_AGE) || 24 * 60 * 60
@@ -113,7 +114,7 @@ export const login = async (req: Request, res: Response) => {
     res.cookie('jwt', refreshToken, {
       httpOnly: true,
       maxAge: JWT_COOKIE_MAX_AGE,
-      secure: true,
+      secure: IS_PRODUCTION,
       sameSite: 'none',
     })
 
@@ -217,7 +218,7 @@ export const logout = async (req: Request, res: Response) => {
     // Clear the JWT cookie.
     res.clearCookie('jwt', {
       httpOnly: true,
-      secure: true,
+      secure: IS_PRODUCTION,
       sameSite: 'none',
     })
 

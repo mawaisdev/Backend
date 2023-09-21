@@ -6,3 +6,4 @@ tmp/
 temp/
 dist/
 src/data-source.ts
+.env

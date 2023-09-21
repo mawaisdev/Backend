@@ -8,6 +8,7 @@ import {
   ACCESS_TOKEN_EXPIRES_IN,
   ACCESS_TOKEN_SECRET,
   REFRESH_TOKEN_SECRET,
+  IS_PRODUCTION,
   region,
 } from './helpers/constants'
 import { generateJwt } from '../utils/jwt-helpers'
@@ -169,7 +170,11 @@ export const login = async (
     return {
       token,
       refreshToken: refreshTokenData.token,
-      userData: { email: user.email, userName: user.userName, role: user.role },
+      userData: {
+        email: user.email,
+        userName: user.userName,
+        roles: user.role,
+      },
       status: 201,
       error: undefined,
     }

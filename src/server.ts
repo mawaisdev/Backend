@@ -2,7 +2,11 @@ import { config } from 'dotenv'
 // Load environment variables from .env file.
 config()
 
-import express from 'express'
+import { Converter } from 'showdown'
+import * as path from 'path'
+import * as fs from 'fs'
+
+import express, { Request, Response } from 'express'
 import 'reflect-metadata'
 import morgan from 'morgan'
 import { authRouter, postRouter } from './routes/index'
@@ -46,6 +50,8 @@ async function initializeApp() {
     // Authentication routes.
     app.use('/auth', authRouter)
 
+    app.get('/', homePage)
+
     // Apply JWT verification middleware.
     app.use(verifyJWT)
 
@@ -64,3 +70,36 @@ async function initializeApp() {
 
 // Start the application.
 initializeApp()
+
+const homePage = async (req: Request, res: Response) => {
+  const filePath = path.join(__dirname, '..', 'API_README.md')
+
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) {
+      console.error('Error reading the file:', err)
+      return res.sendStatus(500)
+    }
+
+    // Convert markdown to HTML using showdown
+    const converter = new Converter()
+    const htmlString = converter.makeHtml(data)
+    const fullContent = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>API Documentation</title>
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/4.0.0/github-markdown.min.css">
+      </head>
+      <body>
+          <div class="markdown-body">
+              ${htmlString}
+          </div>
+      </body>
+      </html>
+    `
+
+    res.send(fullContent)
+  })
+}
