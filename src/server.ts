@@ -9,7 +9,6 @@ import * as fs from 'fs'
 import express, { Request, Response } from 'express'
 import 'reflect-metadata'
 import morgan from 'morgan'
-import { authRouter, postRouter } from './routes/index'
 import cookiesParser from 'cookie-parser'
 
 import { AppDataSource } from './data-source'
@@ -17,6 +16,8 @@ import { verifyJWT } from './utils/jwt-helpers'
 import { corsOptions } from './config/corsOptions'
 import cors from 'cors'
 import { credentials } from './middleware/credentials'
+import { authRouter } from './routes/authRoutes'
+import { postRouter } from './routes/postRoutes'
 
 async function initializeApp() {
   try {

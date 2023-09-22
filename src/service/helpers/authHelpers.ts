@@ -1,14 +1,15 @@
 import { Request } from 'express'
 import bcrypt from 'bcrypt'
 import { DateTime } from 'luxon'
-import { LoginDto } from '../../dto'
-import { RefreshToken, User } from '../../entity/Index'
 import {
   MAX_LOGGED_DEVICES,
   REFRESH_TOKEN_EXPIRES_IN,
   REFRESH_TOKEN_SECRET,
 } from './constants'
 import { generateJwt } from '../../utils/jwt-helpers'
+import { LoginDto } from '../../dto/auth/login.dto'
+import { RefreshToken } from '../../entity/RefreshToken'
+import { User } from '../../entity/User'
 
 /**
  * Hashes the provided password using bcrypt.

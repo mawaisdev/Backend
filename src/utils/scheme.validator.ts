@@ -1,6 +1,7 @@
 import { ValidationError, validate } from 'class-validator'
 import { plainToClass } from 'class-transformer'
-import { SignupDto, LoginDto } from '../dto/index'
+import { SignupDto } from '../dto/auth/signup.dto'
+import { LoginDto } from '../dto/auth/login.dto'
 
 /**
  * Type definition for the result of data validation.

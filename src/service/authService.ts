@@ -13,12 +13,6 @@ import {
 } from './helpers/constants'
 import { generateJwt } from '../utils/jwt-helpers'
 
-// DTOs (Data Transfer Objects)
-import { SignupDto, LoginDto } from '../dto'
-
-// Entities
-import { User, RefreshToken } from '../entity/Index'
-
 // Types
 import {
   CreateUserResponse,
@@ -36,6 +30,10 @@ import {
   hasMaxLoggedDevices,
   createNewRefreshToken,
 } from './helpers/authHelpers'
+import { SignupDto } from '../dto/auth/signup.dto'
+import { LoginDto } from '../dto/auth/login.dto'
+import { RefreshToken } from '../entity/RefreshToken'
+import { User } from '../entity/User'
 
 /**
  * Handles user signup functionality.

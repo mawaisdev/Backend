@@ -3,8 +3,8 @@ import { Response, NextFunction } from 'express'
 
 import { ExtendedRequest, LoggedInUserData } from '../service/types'
 import { User } from '../entity/User'
-import { RefreshToken } from '../entity/Index'
 import { UserRole } from '../config/userRoles'
+import { RefreshToken } from '../entity/RefreshToken'
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || ''
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || ''
