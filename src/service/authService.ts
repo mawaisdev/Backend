@@ -28,6 +28,7 @@ import { generateJwt } from '../utils/jwt-helpers'
 import {
   createNewRefreshToken,
   findRefreshTokenForUserAndIp,
+  generateResetTokenForUser,
   getIp,
   hasMaxLoggedDevices,
   hashPassword,
@@ -37,10 +38,12 @@ import {
 
 // Types
 import {
+  CompleteResetResponse,
   CreateUserResponse,
   LoggedInUserData,
   LoginResponse,
   LogoutResponse,
+  PasswordResetResponse,
   RefreshTokenValidateResponse,
 } from './types'
 
@@ -140,6 +143,7 @@ export class AuthService {
    * @returns The authentication response which includes the token, refresh token, user data, status, and possible error.
    * @throws Will throw an error if unexpected issues occur during authentication.
    */
+
   async login(
     { userName, password }: LoginDto,
     req: Request
@@ -262,6 +266,7 @@ export class AuthService {
       throw new Error('An unexpected error occurred during logout.')
     }
   }
+
   /**
    * Handles JWT refresh functionality.
    *
@@ -274,22 +279,29 @@ export class AuthService {
     tokenFromCookies: string
   ): Promise<RefreshTokenValidateResponse> {
     try {
+      // Fetch the refresh token entity associated with the provided token from the database, including the related user.
       const refreshToken = await this.refreshTokenRepository.findOne({
         where: { token: tokenFromCookies },
         relations: ['user'],
       })
 
+      // Extract the user from the found refresh token, or set it to null if no token was found.
       const user = refreshToken ? refreshToken.user : null
+
+      // If no user was associated with the found refresh token, return an error.
       if (!user) {
         return { errors: 'Invalid Token', status: 403, token: undefined }
       }
 
+      // Ensure secrets are present before proceeding with token verification.
       if (!REFRESH_TOKEN_SECRET || !ACCESS_TOKEN_SECRET) {
         return { errors: 'Secret not provided', status: 500, token: undefined }
       }
 
       return new Promise((resolve, reject) => {
+        // Verify the provided refresh token using the secret.
         jwt.verify(tokenFromCookies, REFRESH_TOKEN_SECRET, (error, decoded) => {
+          // If there's an error during verification, resolve the promise with an error message.
           if (error) {
             resolve({
               errors: 'Token verification failed',
@@ -299,25 +311,75 @@ export class AuthService {
             return
           }
 
+          // Extract user information from the decoded token payload.
           const { userName } = decoded as LoggedInUserData
 
+          // If the username from the decoded token doesn't match the user's username, resolve with an error.
           if (user.userName !== userName) {
             resolve({ errors: 'Invalid User', status: 400, token: undefined })
             return
           }
 
+          // Generate a new JWT access token for the user.
           const accessToken = generateJwt(
             user,
             ACCESS_TOKEN_SECRET,
             ACCESS_TOKEN_EXPIRES_IN,
             user.role
           )
+          // Resolve the promise with the new access token.
           resolve({ errors: undefined, status: 201, token: accessToken })
         })
       })
     } catch (error) {
+      // Log any unexpected errors.
       console.error('Refresh Token Service Error:', error)
+      // Throw a general error for any exceptions.
       throw new Error('An unexpected error occurred during token refresh.')
     }
+  }
+
+  async initiatePasswordReset(email: string): Promise<PasswordResetResponse> {
+    const user = await this.userRepository.findOne({ where: { email } })
+
+    if (user) {
+      await generateResetTokenForUser(user, this.userRepository)
+
+      // will send email to user later
+      // await sendResetEmail(user.email, resetToken)
+    }
+
+    // Return a generic response message.
+    return {
+      message:
+        'If an account exists with the provided email, a reset link has been sent.',
+    }
+  }
+
+  async completePasswordReset(
+    email: string,
+    token: string,
+    newPassword: string
+  ): Promise<CompleteResetResponse> {
+    // Fetch the user by the provided email.
+    const user = await this.userRepository.findOne({ where: { email } })
+
+    // Check if the user exists and if the token matches the one stored in their record.
+    if (!user || user.resetPasswordCode !== token) {
+      return { error: 'Invalid token or email.', message: undefined }
+    }
+
+    // Once the token is validated, hash the new password.
+    const hashedPassword = await hashPassword(newPassword)
+
+    // Update the user's password in the database.
+    user.password = hashedPassword
+
+    // Clear the resetPasswordCode since it should not be used again.
+    user.resetPasswordCode = ''
+
+    await this.userRepository.save(user)
+
+    return { message: 'Password reset successfully.', error: undefined }
   }
 }

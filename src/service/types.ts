@@ -34,3 +34,17 @@ export type LogoutResponse = {
 export interface ExtendedRequest extends Request {
   user?: LoggedInUserData // You might have used another type here
 }
+
+export type PasswordResetResponse = {
+  message?: string
+}
+
+export type CompleteResetResponse = {
+  error?: string
+  message?: string
+}
+export type resetPasswordRequest = {
+  email?: string
+  token?: string
+  password?: string
+}

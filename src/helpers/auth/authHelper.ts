@@ -146,6 +146,27 @@ const getIp = (req: Request): string => {
   }
 }
 
+/**
+ * Generates a random 8-digit numeric token for resetting the user's password.
+ * Saves this token to the user's resetPasswordCode field in the database.
+ *
+ * @param user - The User entity for which the reset token needs to be generated.
+ * @returns A promise resolving to the updated User entity.
+ */
+const generateResetTokenForUser = async (
+  user: User,
+  userRepository: Repository<User>
+): Promise<void> => {
+  // Generate a random 8-digit number.
+  const resetToken = Math.floor(10000000 + Math.random() * 90000000).toString()
+
+  // Set the generated token to the user's resetPasswordCode field.
+  user.resetPasswordCode = resetToken
+
+  // Save the updated user entity to the database.
+  await userRepository.save(user)
+}
+
 export {
   hashPassword,
   validateUser,
@@ -154,4 +175,5 @@ export {
   findRefreshTokenForUserAndIp,
   createNewRefreshToken,
   getIp,
+  generateResetTokenForUser,
 }

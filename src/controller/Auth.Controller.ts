@@ -7,6 +7,7 @@ import { AuthService } from '../service/authService'
 // Utils, validators, and constants
 import { IS_PRODUCTION, COOKIE_MAX_AGE } from '../utils/constants'
 import { ValidateSignUpDto, ValidateLoginDto } from '../utils/scheme.validator'
+import { resetPasswordRequest } from '../service/types'
 
 export class AuthController {
   private authService: AuthService
@@ -246,5 +247,51 @@ export class AuthController {
       errors: [],
       token,
     })
+  }
+
+  /**
+   * Handles both the initiation and completion of the password reset process.
+   * Based on the provided request data, it decides to either initiate or complete the reset.
+   * @param req - Express request object containing either just the email (for initiation)
+   *              or the email, token, and new password (for completion).
+   * @param res - Express response object for sending back the appropriate status.
+   */
+  passwordReset = async (req: Request, res: Response) => {
+    const { email, token, password } = req.body as resetPasswordRequest
+
+    try {
+      // If only email is provided, initiate the password reset.
+      if (email && !token && !password) {
+        const { message } = await this.authService.initiatePasswordReset(email)
+        return res.status(200).json({ status: 200, message })
+      }
+
+      // If email, token, and password are provided, complete the password reset.
+      if (email && token && password) {
+        const { message, error } = await this.authService.completePasswordReset(
+          email,
+          token,
+          password
+        )
+
+        // Check for errors during the completion process.
+        if (error) {
+          return res.status(400).json({ status: 400, message: error })
+        }
+
+        return res.status(200).json({ status: 200, message })
+      }
+
+      // If neither of the above conditions match, return a Bad Request.
+      return res
+        .status(400)
+        .json({ status: 400, message: 'Invalid request format.' })
+    } catch (error) {
+      console.error('Password Reset Error:', error)
+      return res.status(500).json({
+        status: 500,
+        message: 'An unexpected error occurred while processing your request.',
+      })
+    }
   }
 }

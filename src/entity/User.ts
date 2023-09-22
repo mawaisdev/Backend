@@ -69,6 +69,9 @@ export class User {
   })
   role: UserRole
 
+  @Column({ nullable: true })
+  resetPasswordCode: string
+
   @Column({ default: false })
   @IsBoolean()
   isVerified: boolean
