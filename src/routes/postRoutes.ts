@@ -5,8 +5,5 @@ import { verifyRole } from '../middleware/verify-role'
 
 const postRouter = Router()
 
-postRouter
-  .route('/')
-  .get(getAllPosts)
-  .post(verifyRole(UserRole.Admin, UserRole.Editor), addPost)
+postRouter.route('/').get(getAllPosts).post(verifyRole(UserRole.Admin), addPost)
 export { postRouter }
