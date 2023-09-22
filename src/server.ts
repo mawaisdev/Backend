@@ -18,6 +18,7 @@ import cors from 'cors'
 import { credentials } from './middleware/credentials'
 import { authRouter } from './routes/authRoutes'
 import { postRouter } from './routes/postRoutes'
+import { profileRouter } from './routes/profileRoutes'
 
 async function initializeApp() {
   try {
@@ -58,6 +59,9 @@ async function initializeApp() {
 
     // Routes for posts.
     app.use('/posts', postRouter)
+
+    // Routes for Profile
+    app.use('/profile', profileRouter)
 
     // Start the Express server on the specified port.
     app.listen(PORT, () => {

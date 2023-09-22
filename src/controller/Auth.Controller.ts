@@ -6,8 +6,12 @@ import { AuthService } from '../service/authService'
 
 // Utils, validators, and constants
 import { IS_PRODUCTION, COOKIE_MAX_AGE } from '../utils/constants'
-import { ValidateSignUpDto, ValidateLoginDto } from '../utils/scheme.validator'
-import { resetPasswordRequest } from '../service/types'
+import {
+  ValidateSignUpDto,
+  ValidateLoginDto,
+  ValidateResetPasswordDto,
+} from '../utils/scheme.validator'
+import { ResetPasswordValidation, resetPasswordRequest } from '../service/types'
 
 export class AuthController {
   private authService: AuthService
@@ -257,17 +261,38 @@ export class AuthController {
    * @param res - Express response object for sending back the appropriate status.
    */
   passwordReset = async (req: Request, res: Response) => {
-    const { email, token, password } = req.body as resetPasswordRequest
-
     try {
+      // First, validate the request body using the validation scheme.
+      const { errors, dto }: ResetPasswordValidation =
+        await ValidateResetPasswordDto(req.body)
+
+      // If there are validation errors, return them as a bad request.
+      if (errors.length > 0) {
+        const errorMessages = errors
+          .map((error) => Object.values(error.constraints!))
+          .flat()
+        return res
+          .status(400)
+          .json({ status: 400, message: undefined, error: errorMessages })
+      }
+
+      const { email, token, password } = dto
+
       // If only email is provided, initiate the password reset.
       if (email && !token && !password) {
         const { message } = await this.authService.initiatePasswordReset(email)
-        return res.status(200).json({ status: 200, message })
+        return res.status(200).json({ status: 200, message, error: undefined })
       }
 
       // If email, token, and password are provided, complete the password reset.
       if (email && token && password) {
+        if (password.length < 6 || token.length != 8)
+          return res.status(400).json({
+            status: 400,
+            messsage: undefined,
+            errors: ['Invalid Password or token'],
+          })
+
         const { message, error } = await this.authService.completePasswordReset(
           email,
           token,
@@ -276,10 +301,12 @@ export class AuthController {
 
         // Check for errors during the completion process.
         if (error) {
-          return res.status(400).json({ status: 400, message: error })
+          return res
+            .status(400)
+            .json({ status: 400, message: undefined, error: [...error] })
         }
 
-        return res.status(200).json({ status: 200, message })
+        return res.status(200).json({ status: 200, message, error: undefined })
       }
 
       // If neither of the above conditions match, return a Bad Request.

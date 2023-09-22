@@ -1,6 +1,8 @@
+import { ValidationError } from 'class-validator'
 import { UserRole } from '../config/userRoles'
 import { User } from '../entity/User'
 import { Request } from 'express'
+import { ResetPasswordDto } from '../dto/auth/resetPassword.dto'
 
 export type CreateUserResponse = {
   errors?: string
@@ -47,4 +49,19 @@ export type resetPasswordRequest = {
   email?: string
   token?: string
   password?: string
+}
+export type UserProfile = {
+  firstName: string
+  lastName: string
+  userName: string
+  email: string
+  profilePicture?: string
+  bio?: string
+  lastLogin?: Date
+  role: UserRole
+}
+
+export type ResetPasswordValidation = {
+  errors: ValidationError[]
+  dto: ResetPasswordDto
 }

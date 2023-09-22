@@ -375,6 +375,9 @@ export class AuthService {
     // Update the user's password in the database.
     user.password = hashedPassword
 
+    // updateing the updateAt ( user modified column )
+    user.updatedAt = DateTime.now().setZone(region).toJSDate()
+
     // Clear the resetPasswordCode since it should not be used again.
     user.resetPasswordCode = ''
 

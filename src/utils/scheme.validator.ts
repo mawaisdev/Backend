@@ -2,6 +2,8 @@ import { ValidationError, validate } from 'class-validator'
 import { plainToClass } from 'class-transformer'
 import { SignupDto } from '../dto/auth/signup.dto'
 import { LoginDto } from '../dto/auth/login.dto'
+import { ResetPasswordDto } from '../dto/auth/resetPassword.dto'
+import { ResetPasswordValidation } from '../service/types'
 
 /**
  * Type definition for the result of data validation.
@@ -46,4 +48,22 @@ export const ValidateLoginDto = async (
   const errors = await validate(loginDto)
 
   return { errors, dto: loginDto }
+}
+
+/**
+ * Validates the data for resetting a password using the ResetPasswordDto.
+ *
+ * @param dto - The data to validate, as a plain object.
+ * @returns ResetPasswordValidation<ResetPasswordDto> - The validated DTO and any validation errors.
+ */
+export const ValidateResetPasswordDto = async (
+  dto: object
+): Promise<ResetPasswordValidation> => {
+  // Convert the plain object to a ResetPasswordDto instance.
+  const resetPasswordDto = plainToClass(ResetPasswordDto, dto)
+
+  // Validate the DTO using class-validator.
+  const errors = await validate(resetPasswordDto)
+
+  return { errors, dto: resetPasswordDto }
 }
