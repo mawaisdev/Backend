@@ -19,7 +19,7 @@ import { RefreshToken } from './RefreshToken'
 import { UserRole } from '../config/userRoles'
 
 @Entity()
-export class User extends BaseEntity {
+export class User {
   @PrimaryGeneratedColumn()
   id: number
 

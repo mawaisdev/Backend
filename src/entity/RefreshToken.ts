@@ -10,7 +10,7 @@ import {
 import { User } from './User'
 
 @Entity()
-export class RefreshToken extends BaseEntity {
+export class RefreshToken {
   @PrimaryGeneratedColumn()
   id: number
 
