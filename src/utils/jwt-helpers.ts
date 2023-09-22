@@ -5,6 +5,7 @@ import { ExtendedRequest, LoggedInUserData } from '../service/types'
 import { User } from '../entity/User'
 import { UserRole } from '../config/userRoles'
 import { RefreshToken } from '../entity/RefreshToken'
+import { AppDataSource } from '../data-source'
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || ''
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || ''
@@ -54,6 +55,7 @@ export const verifyJWT = async (
 ) => {
   // Extract the JWT from the authorization header.
   const authHeader = req.headers['authorization']
+  const refreshTokenRepo = AppDataSource.getRepository(RefreshToken)
 
   // Extract the refresh token from the cookie.
   const refreshTokenFromCookie = req.cookies?.jwt
@@ -88,7 +90,7 @@ export const verifyJWT = async (
     }
 
     // Check if the refresh token from the cookie exists in the database.
-    const refreshTokenExists = await RefreshToken.findOne({
+    const refreshTokenExists = await refreshTokenRepo.findOne({
       where: { token: refreshTokenFromCookie },
     })
     if (!refreshTokenExists) {
