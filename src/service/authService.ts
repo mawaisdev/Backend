@@ -339,46 +339,60 @@ export class AuthService {
     }
   }
 
+  /**
+   * Initiates the password reset process for a given email.
+   *
+   * Generates a reset token for the user (if they exist) and sends an email with reset instructions.
+   *
+   * @param {string} email - The email of the user trying to reset their password.
+   * @returns {Promise<PasswordResetResponse>} - A message indicating the reset process has been initiated.
+   */
   async initiatePasswordReset(email: string): Promise<PasswordResetResponse> {
     const user = await this.userRepository.findOne({ where: { email } })
 
     if (user) {
       await generateResetTokenForUser(user, this.userRepository)
-
-      // will send email to user later
-      // await sendResetEmail(user.email, resetToken)
+      // NOTE: Email sending will be implemented in the future.
+      // await sendResetEmail(user.email, resetToken);
     }
 
-    // Return a generic response message.
+    // Always return a generic response to prevent email enumeration.
     return {
       message:
         'If an account exists with the provided email, a reset link has been sent.',
     }
   }
 
+  /**
+   * Completes the password reset process for a user.
+   *
+   * Validates the provided reset token, and if valid, updates the user's password.
+   *
+   * @param {string} email - The email of the user resetting their password.
+   * @param {string} token - The reset token provided by the user.
+   * @param {string} newPassword - The new password provided by the user.
+   * @returns {Promise<CompleteResetResponse>} - A message indicating the result of the reset process.
+   */
   async completePasswordReset(
     email: string,
     token: string,
     newPassword: string
   ): Promise<CompleteResetResponse> {
-    // Fetch the user by the provided email.
     const user = await this.userRepository.findOne({ where: { email } })
 
-    // Check if the user exists and if the token matches the one stored in their record.
+    // Check if a user exists with the provided email and the token matches the stored token.
     if (!user || user.resetPasswordCode !== token) {
       return { error: 'Invalid token or email.', message: undefined }
     }
 
-    // Once the token is validated, hash the new password.
+    // If the token is valid, hash the new password.
     const hashedPassword = await hashPassword(newPassword)
-
-    // Update the user's password in the database.
     user.password = hashedPassword
 
-    // updateing the updateAt ( user modified column )
+    // Set the updated timestamp.
     user.updatedAt = DateTime.now().setZone(region).toJSDate()
 
-    // Clear the resetPasswordCode since it should not be used again.
+    // Clear the reset token as it should not be reused.
     user.resetPasswordCode = ''
 
     await this.userRepository.save(user)
