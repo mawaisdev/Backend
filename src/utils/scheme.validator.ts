@@ -11,7 +11,7 @@ import { UpdatePasswordDto } from '../dto/auth/updatePassword.dto'
  * Contains any validation errors and the validated DTO.
  */
 export type UserDataValidation<T> = {
-  errors: ValidationError[]
+  errors: string[]
   dto: T
 }
 
@@ -28,7 +28,8 @@ export const ValidateSignUpDto = async (
   const userDto = plainToClass(SignupDto, dto)
 
   // Validate the DTO using class-validator.
-  const errors = await validate(userDto)
+  const validationErrors = await validate(userDto)
+  const errors = extractErrorMessages(validationErrors)
 
   return { errors, dto: userDto }
 }
@@ -46,7 +47,8 @@ export const ValidateLoginDto = async (
   const loginDto = plainToClass(LoginDto, dto)
 
   // Validate the DTO using class-validator.
-  const errors = await validate(loginDto)
+  const validationErrors = await validate(loginDto)
+  const errors = extractErrorMessages(validationErrors)
 
   return { errors, dto: loginDto }
 }
@@ -64,7 +66,8 @@ export const ValidateResetPasswordDto = async (
   const resetPasswordDto = plainToClass(ResetPasswordDto, dto)
 
   // Validate the DTO using class-validator.
-  const errors = await validate(resetPasswordDto)
+  const validationErrors = await validate(resetPasswordDto)
+  const errors = extractErrorMessages(validationErrors)
 
   return { errors, dto: resetPasswordDto }
 }
@@ -74,7 +77,13 @@ export const UpdatePasswordValidator = async (dto: UpdatePasswordDto) => {
   const updatePasswordDto = plainToClass(UpdatePasswordDto, dto)
 
   // validate the DTO using class validator
-  const errors = await validate(updatePasswordDto)
+  const validationErrors = await validate(updatePasswordDto)
+  const errors = extractErrorMessages(validationErrors)
 
   return { errors, dto: updatePasswordDto }
+}
+
+// Utility to extract error messages from validation results
+const extractErrorMessages = (errors: ValidationError[]): string[] => {
+  return errors.map((error) => Object.values(error.constraints!)).flat()
 }

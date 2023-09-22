@@ -62,6 +62,6 @@ export type UserProfile = {
 }
 
 export type ResetPasswordValidation = {
-  errors: ValidationError[]
+  errors: string[]
   dto: ResetPasswordDto
 }
