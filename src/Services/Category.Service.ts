@@ -4,7 +4,11 @@ import { AppDataSource } from '../data-source'
 import { CreateCategoryDto } from '../Dto/Category/Category.Dto'
 import { CategoryServiceResponse } from './types'
 import { User } from '../Entity/User'
-import { createCategoryServiceResponse } from '../Helpers/Category/Category.Helpers'
+import {
+  InternalServerErrorResponse,
+  createCategoryServiceResponse,
+  fetchCategoryById,
+} from '../Helpers/Category/Category.Helpers'
 
 export class CategoryService {
   private categoryRepository: Repository<Category>
@@ -54,7 +58,7 @@ export class CategoryService {
       )
     } catch (error) {
       console.error('Category Service Error: ', error)
-      return createCategoryServiceResponse(500, 'Internal Server Error')
+      return InternalServerErrorResponse()
     }
   }
 
@@ -70,11 +74,28 @@ export class CategoryService {
       }
     } catch (error) {
       console.error('Category Service Error: ', error)
-      return {
-        status: 500,
-        data: undefined,
-        response: 'Error occured while fetching categories',
-      }
+      return InternalServerErrorResponse()
+    }
+  }
+
+  getCategoryById = async (
+    categoryId: number
+  ): Promise<CategoryServiceResponse<Category>> => {
+    try {
+      const category = await this.categoryRepository.findOne({
+        where: { id: categoryId },
+      })
+
+      if (category)
+        return fetchCategoryById(
+          200,
+          'Category Fetched Successfully.',
+          category
+        )
+      else return fetchCategoryById(404, 'Category Not Found.', undefined)
+    } catch (error) {
+      console.log('Category Service Error: ', error)
+      return InternalServerErrorResponse()
     }
   }
 }

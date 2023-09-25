@@ -7,11 +7,14 @@ import { UserRole } from '../Config/UserRoles'
 const categoryRouter = Router()
 const categoryService = new CategoryService()
 
-const { create, getAllCategories } = new CategoryController(categoryService)
+const { create, getAllCategories, getCategoryById } = new CategoryController(
+  categoryService
+)
 
 categoryRouter
   .route('/')
   .post(verifyRole(UserRole.Admin), create)
   .get(getAllCategories)
 
+categoryRouter.get('/:id', getCategoryById)
 export { categoryRouter }

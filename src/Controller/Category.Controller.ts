@@ -2,6 +2,7 @@ import { Response } from 'express'
 import { CategoryService } from '../Services/Category.Service'
 import { ExtendedRequest } from '../Services/types'
 import { CreateCAategoryValidator } from '../Utils/Scheme.Validators'
+import { InternalServerErrorResponse } from '../Helpers/Category/Category.Helpers'
 
 export class CategoryController {
   private categoryService: CategoryService
@@ -25,7 +26,10 @@ export class CategoryController {
       return res
         .status(status)
         .json({ response, status, data: data ? data : null })
-    } catch (error) {}
+    } catch (error) {
+      console.error('Category Controller Error: ', error)
+      return InternalServerErrorResponse()
+    }
   }
 
   getAllCategories = async (req: ExtendedRequest, res: Response) => {
@@ -37,11 +41,27 @@ export class CategoryController {
         .json({ status, response, data: data ? data : null })
     } catch (error) {
       console.error('Category Controller Error: ', error)
-      return res.status(500).json({
-        data: null,
-        status: 500,
-        response: 'Internal Server Error',
-      })
+      return InternalServerErrorResponse()
+    }
+  }
+
+  getCategoryById = async (req: ExtendedRequest, res: Response) => {
+    try {
+      const { id } = req.params
+      if (!(id && Number(id)))
+        return res
+          .status(400)
+          .json({ status: 400, response: 'Invalid Id.', data: null })
+
+      const { status, data, response } =
+        await this.categoryService.getCategoryById(Number(id))
+
+      return res
+        .status(status)
+        .json({ status, response, data: data ? data : null })
+    } catch (error) {
+      console.error('Category Controller Error: ', error)
+      return InternalServerErrorResponse()
     }
   }
 }
