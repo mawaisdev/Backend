@@ -12,6 +12,7 @@ import {
 import { RefreshToken } from './RefreshToken'
 import { UserRole } from '../Config/UserRoles'
 import { Category } from './Category'
+import { Post } from './Post'
 
 @Entity('Users')
 export class User {
@@ -101,4 +102,7 @@ export class User {
 
   @OneToMany((type) => Category, (category) => category.createdBy)
   categories: Category[]
+
+  @OneToMany(() => Post, (post) => post.user)
+  posts: Post[]
 }

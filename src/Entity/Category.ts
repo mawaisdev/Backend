@@ -5,8 +5,10 @@ import {
   ManyToOne,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm'
 import { User } from './User'
+import { Post } from './Post'
 
 @Entity('Categories')
 export class Category {
@@ -29,4 +31,7 @@ export class Category {
 
   @ManyToOne((type) => User, (user) => user.categories)
   createdBy: User
+
+  @OneToMany(() => Post, (post) => post.category)
+  posts: Post[]
 }
