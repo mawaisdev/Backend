@@ -16,9 +16,10 @@ import { verifyJWT } from './utils/jwt-helpers'
 import { corsOptions } from './config/corsOptions'
 import cors from 'cors'
 import { credentials } from './middleware/credentials'
-import { authRouter } from './routes/authRoutes'
-import { postRouter } from './routes/postRoutes'
-import { profileRouter } from './routes/profileRoutes'
+import { authRouter } from './routes/Auth.Routes'
+import { postRouter } from './routes/Post.Routes'
+import { profileRouter } from './routes/Profile.Routes'
+import { categoryRouter } from './routes/Category.Routes'
 
 async function initializeApp() {
   try {
@@ -62,6 +63,9 @@ async function initializeApp() {
 
     // Routes for Profile
     app.use('/profile', profileRouter)
+
+    // Routes for Categories
+    app.use('category', categoryRouter)
 
     // Start the Express server on the specified port.
     app.listen(PORT, () => {

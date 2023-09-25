@@ -26,6 +26,7 @@ export type LoginResponse = {
 export type LoggedInUserData = {
   userName: string
   email: string
+  id: number
   roles?: UserRole
 }
 
@@ -64,4 +65,10 @@ export type UserProfile = {
 export type ResetPasswordValidation = {
   errors: string[]
   dto: ResetPasswordDto
+}
+
+export type CategoryServiceResponse<T> = {
+  status: number
+  response?: string
+  data?: T
 }

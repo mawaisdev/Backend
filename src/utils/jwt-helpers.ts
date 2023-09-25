@@ -23,12 +23,14 @@ const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || ''
  * @returns {string} - Generated JWT.
  */
 export const generateJwt = (
-  { userName, email }: User,
+  { userName, email, id }: User,
   secret: string,
   expiresIn: string,
   roles?: UserRole
 ): string => {
-  const payload = roles ? { userName, email, roles } : { userName, email }
+  const payload = roles
+    ? { userName, email, id, roles }
+    : { userName, email, id }
 
   return jwt.sign(payload, secret, { expiresIn })
 }

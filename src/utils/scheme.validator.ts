@@ -5,6 +5,7 @@ import { LoginDto } from '../dto/auth/login.dto'
 import { ResetPasswordDto } from '../dto/auth/resetPassword.dto'
 import { ResetPasswordValidation } from '../service/types'
 import { UpdatePasswordDto } from '../dto/auth/updatePassword.dto'
+import { CreateCategoryDto } from '../dto/category/category.dto'
 
 /**
  * Type definition for the result of data validation.
@@ -81,6 +82,17 @@ export const UpdatePasswordValidator = async (dto: UpdatePasswordDto) => {
   const errors = extractErrorMessages(validationErrors)
 
   return { errors, dto: updatePasswordDto }
+}
+
+export const CreateCAategoryValidator = async (dto: CreateCategoryDto) => {
+  // Convert the plain object to a CreateCAategoryValidator instance
+  const createCategoryDto = plainToClass(CreateCategoryDto, dto)
+
+  // validate the DTO using class validator
+  const validationErrors = await validate(createCategoryDto)
+  const errors = extractErrorMessages(validationErrors)
+
+  return { errors, dto: createCategoryDto }
 }
 
 // Utility to extract error messages from validation results
