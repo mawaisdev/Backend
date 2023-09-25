@@ -1,10 +1,4 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  BaseEntity,
-  OneToMany,
-} from 'typeorm'
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm'
 import {
   IsAlphanumeric,
   IsEmail,
@@ -17,6 +11,7 @@ import {
 } from 'class-validator'
 import { RefreshToken } from './RefreshToken'
 import { UserRole } from '../config/userRoles'
+import { Category } from './Category'
 
 @Entity()
 export class User {
@@ -103,4 +98,7 @@ export class User {
     cascade: true,
   })
   refreshTokens: RefreshToken[]
+
+  @OneToMany((type) => Category, (category) => category.createdBy)
+  categories: Category[]
 }
