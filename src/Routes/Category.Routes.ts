@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { CategoryService } from '../Services/Category.Service'
 import { CategoryController } from '../Controller/Category.Controller'
 import { verifyRole } from '../Middleware/Verify.Role'
+import { validateId } from '../Middleware/ValidateId'
 import { UserRole } from '../Config/UserRoles'
 
 const categoryRouter = Router()
@@ -22,7 +23,7 @@ categoryRouter
 
 categoryRouter
   .route('/:id')
-  .get(getCategoryById)
-  .patch(verifyRole(UserRole.Admin), updateCategory)
-  .delete(verifyRole(UserRole.Admin), deleteCategory)
+  .get(validateId, getCategoryById)
+  .patch(verifyRole(UserRole.Admin), validateId, updateCategory)
+  .delete(verifyRole(UserRole.Admin), validateId, deleteCategory)
 export { categoryRouter }

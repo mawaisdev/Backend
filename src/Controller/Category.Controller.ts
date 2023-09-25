@@ -2,11 +2,16 @@ import { Response } from 'express'
 import { CategoryService } from '../Services/Category.Service'
 import { ExtendedRequest } from '../Services/types'
 import { CreateCategoryValidator } from '../Utils/Scheme.Validators'
-import { InternalServerErrorResponse } from '../Helpers/Category/Category.Helpers'
+import {
+  InternalServerErrorResponse,
+  sendErrorResponse,
+  sendSuccessResponse,
+} from '../Helpers/Category/Category.Helpers'
 import { dateNow } from '../Utils/Constants'
 
 export class CategoryController {
   private categoryService: CategoryService
+
   constructor(categoryService: CategoryService) {
     this.categoryService = categoryService
   }
@@ -17,16 +22,14 @@ export class CategoryController {
         await CreateCategoryValidator(req.body)
 
       if (validationErrors.length > 0)
-        return { response: [...validationErrors], status: 400 }
+        return sendErrorResponse(res, 400, validationErrors.join(', '))
 
       const user = req.user
-      if (!user) return { response: 'Invalid User', status: 400 }
+      if (!user) return sendErrorResponse(res, 400, 'Invalid User')
 
       const { status, data, response } =
         await this.categoryService.createCategory(categoryDto, user.id)
-      return res
-        .status(status)
-        .json({ response, status, data: data ? data : null })
+      return sendSuccessResponse(res, status, response as string, data)
     } catch (error) {
       console.error('Category Controller Error: ', error)
       return InternalServerErrorResponse()
@@ -37,9 +40,7 @@ export class CategoryController {
     try {
       const { data, response, status } =
         await this.categoryService.getAllCategories()
-      return res
-        .status(status)
-        .json({ status, response, data: data ? data : null })
+      return sendSuccessResponse(res, status, response as string, data)
     } catch (error) {
       console.error('Category Controller Error: ', error)
       return InternalServerErrorResponse()
@@ -48,18 +49,9 @@ export class CategoryController {
 
   getCategoryById = async (req: ExtendedRequest, res: Response) => {
     try {
-      const { id } = req.params
-      if (!(id && Number(id)))
-        return res
-          .status(400)
-          .json({ status: 400, response: 'Invalid Id.', data: null })
-
       const { status, data, response } =
-        await this.categoryService.getCategoryById(Number(id))
-
-      return res
-        .status(status)
-        .json({ status, response, data: data ? data : null })
+        await this.categoryService.getCategoryById(Number(req.params.id))
+      return sendSuccessResponse(res, status, response as string, data)
     } catch (error) {
       console.error('Category Controller Error: ', error)
       return InternalServerErrorResponse()
@@ -68,33 +60,27 @@ export class CategoryController {
 
   updateCategory = async (req: ExtendedRequest, res: Response) => {
     try {
-      const { id } = req.params
       const user = req.user
+      if (!user) return sendErrorResponse(res, 400, 'Invalid User')
       const { errors: validationErrors, dto: categoryDto } =
         await CreateCategoryValidator(req.body)
 
       if (validationErrors.length > 0)
-        return { response: [...validationErrors], status: 400 }
-      if (!(id && Number(id)))
-        return res
-          .status(400)
-          .json({ status: 400, response: 'Invalid Id', data: null })
-      if (!user) return res.sendStatus(401)
+        return sendErrorResponse(res, 400, validationErrors.join(', '))
 
       const updatedAt = dateNow
       const updatedById = user.id
       const { name, description } = categoryDto
+
       const { status, response, data } =
-        await this.categoryService.updateCategory(Number(id), {
+        await this.categoryService.updateCategory(Number(req.params.id), {
           name,
           description,
           updatedAt,
           updatedById,
         })
 
-      return res
-        .status(status)
-        .json({ status, response, data: data ? data : null })
+      return sendSuccessResponse(res, status, response as string, data)
     } catch (error) {
       console.error('Category Controller Error: ', error)
       return InternalServerErrorResponse()
@@ -103,17 +89,9 @@ export class CategoryController {
 
   deleteCategory = async (req: ExtendedRequest, res: Response) => {
     try {
-      const { id } = req.params
-      const user = req.user
-
-      if (!(id && Number(id) && user))
-        return { status: 400, response: 'Invalid Id', data: null }
-
       const { status, response, data } =
-        await this.categoryService.deleteCategory(Number(id))
-      return res
-        .status(status)
-        .json({ status, response, data: data ? data : null })
+        await this.categoryService.deleteCategory(Number(req.params.id))
+      return sendSuccessResponse(res, status, response as string, data)
     } catch (error) {
       console.error('Category Controller Error: ', error)
       return InternalServerErrorResponse()
