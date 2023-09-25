@@ -125,6 +125,7 @@ export class CategoryService {
     try {
       const category = await this.categoryRepository.findOne({
         where: { id: id },
+        select: ['id', 'name', 'description'],
       })
       if (!category)
         return { status: 404, response: 'Not Found', data: undefined }
