@@ -1,7 +1,6 @@
 // External libraries
 import { Request } from 'express'
 import jwt from 'jsonwebtoken'
-import { DateTime } from 'luxon'
 import { Repository } from 'typeorm'
 
 // Entities
@@ -20,7 +19,7 @@ import {
   ACCESS_TOKEN_EXPIRES_IN,
   ACCESS_TOKEN_SECRET,
   REFRESH_TOKEN_SECRET,
-  region,
+  dateNow,
 } from '../utils/constants'
 import { generateJwt } from '../utils/jwt-helpers'
 
@@ -34,7 +33,7 @@ import {
   hashPassword,
   isValidPassword,
   validateUser,
-} from '../helpers/auth/authHelper'
+} from '../helpers/auth/auth.helper'
 
 // Types
 import {
@@ -106,7 +105,7 @@ export class AuthService {
       }
 
       // Generate the current date for user timestamps.
-      const currentDate = DateTime.now().setZone(region).toJSDate()
+      const currentDate = dateNow
 
       // Securely hash the provided password.
       const hashedPassword = await hashPassword(password)
@@ -214,7 +213,7 @@ export class AuthService {
       }
 
       // Update user's last login timestamp and save it.
-      user.lastLogin = DateTime.now().setZone(region).toJSDate()
+      user.lastLogin = dateNow
       await this.userRepository.save(user)
 
       // Return success response with generated tokens and user data.
@@ -224,6 +223,7 @@ export class AuthService {
         userData: {
           email: user.email,
           userName: user.userName,
+          id: user.id,
           roles: user.role,
         },
         status: 201,
@@ -390,7 +390,7 @@ export class AuthService {
     user.password = hashedPassword
 
     // Set the updated timestamp.
-    user.updatedAt = DateTime.now().setZone(region).toJSDate()
+    user.updatedAt = dateNow
 
     // Clear the reset token as it should not be reused.
     user.resetPasswordCode = ''

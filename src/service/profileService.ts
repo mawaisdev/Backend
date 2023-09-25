@@ -3,9 +3,8 @@ import { User } from '../entity/User'
 import { AppDataSource } from '../data-source'
 import { UserProfile } from './types'
 import { UpdatePasswordDto } from '../dto/auth/updatePassword.dto'
-import { hashPassword, isValidPassword } from '../helpers/auth/authHelper'
-import { DateTime } from 'luxon'
-import { region } from '../utils/constants'
+import { hashPassword, isValidPassword } from '../helpers/auth/auth.helper'
+import { dateNow } from '../utils/constants'
 
 export class ProfileService {
   private userRepository: Repository<User>
@@ -58,7 +57,7 @@ export class ProfileService {
       return { error: 'Invalid Previous Password', status: 400, message: '' }
 
     user.password = await hashPassword(newPassword)
-    user.updatedAt = DateTime.now().setZone(region).toJSDate()
+    user.updatedAt = dateNow
 
     await this.userRepository.save(user)
     return { error: '', status: 200, message: 'Password Updated Successfully' }
