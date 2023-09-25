@@ -12,14 +12,14 @@ import morgan from 'morgan'
 import cookiesParser from 'cookie-parser'
 
 import { AppDataSource } from './data-source'
-import { verifyJWT } from './utils/jwt-helpers'
-import { corsOptions } from './config/corsOptions'
+import { verifyJWT } from './Utils/Jwt.helpers'
+import { corsOptions } from './Config/CorsOptions'
 import cors from 'cors'
-import { credentials } from './middleware/credentials'
-import { authRouter } from './routes/Auth.Routes'
-import { postRouter } from './routes/Post.Routes'
-import { profileRouter } from './routes/Profile.Routes'
-import { categoryRouter } from './routes/Category.Routes'
+import { credentials } from './middleware/Credentials'
+import { authRouter } from './Routes/Auth.Routes'
+import { postRouter } from './Routes/Post.Routes'
+import { profileRouter } from './Routes/Profile.Routes'
+import { categoryRouter } from './Routes/Category.Routes'
 
 async function initializeApp() {
   try {

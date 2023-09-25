@@ -1,8 +1,8 @@
 import 'reflect-metadata'
 import { DataSource } from 'typeorm'
-import { User } from './entity/User'
-import { RefreshToken } from './entity/RefreshToken'
-import { Category } from './entity/Category'
+import { User } from './Entity/User'
+import { RefreshToken } from './Entity/RefreshToken'
+import { Category } from './Entity/Category'
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
