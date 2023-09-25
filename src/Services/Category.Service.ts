@@ -1,29 +1,41 @@
 import { Repository } from 'typeorm'
+import { CategoryDto } from '../Dto/Category/Category.Dto'
 import { Category } from '../Entity/Category'
 import { User } from '../Entity/User'
-import { AppDataSource } from '../data-source'
-import { CategoryDto } from '../Dto/Category/Category.Dto'
-import { CategoryServiceResponse } from './types'
 import {
-  InternalServerErrorResponse,
   createCategoryServiceResponse,
+  InternalServerErrorResponse,
   fetchCategoryById,
 } from '../Helpers/Category/Category.Helpers'
+import { AppDataSource } from '../data-source'
+import { CategoryServiceResponse } from './types'
 
+/**
+ * Category Service handles CRUD operations for categories.
+ */
 export class CategoryService {
   private categoryRepository: Repository<Category>
   private userRepository: Repository<User>
 
   constructor() {
+    // Initializing category and user repositories.
     this.categoryRepository = AppDataSource.getRepository(Category)
     this.userRepository = AppDataSource.getRepository(User)
   }
 
+  /**
+   * Create a new category.
+   *
+   * @param {CategoryDto} categoryDto - DTO for category.
+   * @param {number} userId - ID of the user creating the category.
+   * @returns {Promise<CategoryServiceResponse<Category>>} - Response with status and data.
+   */
   createCategory = async (
     { name, description }: CategoryDto,
     userId: number
   ): Promise<CategoryServiceResponse<Category>> => {
     try {
+      // Check if category already exists in DB.
       const categoryFromDb = await this.categoryRepository
         .createQueryBuilder('category')
         .where('category.name ILIKE :name', { name: `%${name}%` })
@@ -32,15 +44,18 @@ export class CategoryService {
       if (categoryFromDb)
         return createCategoryServiceResponse(400, 'Category already exists')
 
+      // Fetch user by userId.
       const user = await this.userRepository.findOne({ where: { id: userId } })
       if (!user) return createCategoryServiceResponse(404, 'User Not Found')
 
+      // Save new category to the DB.
       const categoryWithUser = await this.categoryRepository.save({
         name,
         description,
         createdBy: user,
       })
 
+      // Fetch the saved category.
       const category = await this.categoryRepository.findOne({
         where: { id: categoryWithUser.id },
       })
@@ -55,8 +70,14 @@ export class CategoryService {
     }
   }
 
+  /**
+   * Fetch all categories.
+   *
+   * @returns {Promise<CategoryServiceResponse<Category[]>>} - Response with status and data.
+   */
   getAllCategories = async (): Promise<CategoryServiceResponse<Category[]>> => {
     try {
+      // Fetch all categories.
       const categories = await this.categoryRepository.find({
         select: ['id', 'name', 'description', 'createdBy'],
       })
@@ -71,10 +92,17 @@ export class CategoryService {
     }
   }
 
+  /**
+   * Fetch a category by its ID.
+   *
+   * @param {number} categoryId - ID of the category.
+   * @returns {Promise<CategoryServiceResponse<Category>>} - Response with status and data.
+   */
   getCategoryById = async (
     categoryId: number
   ): Promise<CategoryServiceResponse<Category>> => {
     try {
+      // Fetch category by its ID.
       const category = await this.categoryRepository.findOne({
         where: { id: categoryId },
       })
@@ -87,12 +115,22 @@ export class CategoryService {
     }
   }
 
+  /**
+   * Update an existing category.
+   *
+   * @param {number} id - ID of the category to update.
+   * @param {Partial<Category>} updatedData - Updated data for the category.
+   * @returns {Promise<CategoryServiceResponse<Category>>} - Response with status and data.
+   */
   updateCategory = async (
     id: number,
     updatedData: Partial<Category>
   ): Promise<CategoryServiceResponse<Category>> => {
     try {
+      // Update the category.
       await this.categoryRepository.update(id, updatedData)
+
+      // Fetch the updated category.
       const category = await this.categoryRepository.findOne({
         where: { id: id },
       })
@@ -107,10 +145,17 @@ export class CategoryService {
     }
   }
 
+  /**
+   * Delete a category.
+   *
+   * @param {number} id - ID of the category to delete.
+   * @returns {Promise<CategoryServiceResponse<Category>>} - Response with status and data.
+   */
   deleteCategory = async (
     id: number
   ): Promise<CategoryServiceResponse<Category>> => {
     try {
+      // Fetch category for deletion.
       const category = await this.categoryRepository.findOne({
         where: { id },
         select: ['id', 'name', 'description'],
@@ -119,6 +164,7 @@ export class CategoryService {
       if (!category)
         return { status: 404, response: 'Not Found', data: undefined }
 
+      // Delete the category.
       const data = await this.categoryRepository.remove(category)
       return { status: 200, response: 'Deleted Successfully', data }
     } catch (error) {
