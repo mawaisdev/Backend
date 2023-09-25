@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { CategoryService } from '../Services/Category.Service'
 import { CategoryController } from '../Controller/Category.Controller'
-import { verifyRole } from '../middleware/Verify.Role'
+import { verifyRole } from '../Middleware/Verify.Role'
 import { UserRole } from '../Config/UserRoles'
 
 const categoryRouter = Router()
