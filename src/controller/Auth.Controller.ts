@@ -35,14 +35,10 @@ export class AuthController {
 
       // Check for validation errors.
       if (validationErrors.length > 0) {
-        const errorMessages = validationErrors
-          .map((error) => Object.values(error.constraints!))
-          .flat()
-
         // Return a response with a status of 400 (Bad Request) and the validation errors.
         return res.status(400).json({
           status: 400,
-          errors: errorMessages,
+          errors: validationErrors,
           user: undefined,
         })
       }
@@ -92,16 +88,10 @@ export class AuthController {
 
       // Check for validation errors.
       if (validationErrors.length > 0) {
-        const errorMessages = validationErrors
-          .map((error) =>
-            Object.values(error.constraints ? error.constraints : '')
-          )
-          .flat()
-
         // Return a response with a status of 400 (Bad Request) and the validation errors.
         return res.status(400).json({
           status: 400,
-          errors: errorMessages,
+          errors: validationErrors,
           token: undefined,
           userData: undefined,
         })
@@ -263,17 +253,14 @@ export class AuthController {
   passwordReset = async (req: Request, res: Response) => {
     try {
       // First, validate the request body using the validation scheme.
-      const { errors, dto }: ResetPasswordValidation =
+      const { errors: validationErrors, dto }: ResetPasswordValidation =
         await ValidateResetPasswordDto(req.body)
 
       // If there are validation errors, return them as a bad request.
-      if (errors.length > 0) {
-        const errorMessages = errors
-          .map((error) => Object.values(error.constraints!))
-          .flat()
+      if (validationErrors.length > 0) {
         return res
           .status(400)
-          .json({ status: 400, message: undefined, error: errorMessages })
+          .json({ status: 400, message: undefined, error: validationErrors })
       }
 
       const { email, token, password } = dto
