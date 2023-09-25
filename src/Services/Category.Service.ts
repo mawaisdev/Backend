@@ -1,7 +1,7 @@
 import { Repository } from 'typeorm'
 import { Category } from '../Entity/Category'
 import { AppDataSource } from '../data-source'
-import { CreateCategoryDto } from '../Dto/Category/Category.Dto'
+import { CategoryDto } from '../Dto/Category/Category.Dto'
 import { CategoryServiceResponse } from './types'
 import { User } from '../Entity/User'
 import {
@@ -20,7 +20,7 @@ export class CategoryService {
   }
 
   createCategory = async (
-    { name, description }: CreateCategoryDto,
+    { name, description }: CategoryDto,
     userId: number
   ): Promise<CategoryServiceResponse<Category>> => {
     try {
@@ -98,4 +98,6 @@ export class CategoryService {
       return InternalServerErrorResponse()
     }
   }
+
+  updateCategory = async (id: number, updatedData: Partial<Category>) => {}
 }

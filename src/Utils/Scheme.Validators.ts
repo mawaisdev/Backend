@@ -5,7 +5,7 @@ import { LoginDto } from '../Dto/Auth/Login.Dto'
 import { ResetPasswordDto } from '../Dto/Auth/ResetPassword.Dto'
 import { ResetPasswordValidation } from '../Services/types'
 import { UpdatePasswordDto } from '../Dto/Auth/UpdatePassword.Dto'
-import { CreateCategoryDto } from '../Dto/Category/Category.Dto'
+import { CategoryDto } from '../Dto/Category/Category.Dto'
 
 /**
  * Type definition for the result of data validation.
@@ -84,9 +84,9 @@ export const UpdatePasswordValidator = async (dto: UpdatePasswordDto) => {
   return { errors, dto: updatePasswordDto }
 }
 
-export const CreateCAategoryValidator = async (dto: CreateCategoryDto) => {
+export const CreateCategoryValidator = async (dto: CategoryDto) => {
   // Convert the plain object to a CreateCAategoryValidator instance
-  const createCategoryDto = plainToClass(CreateCategoryDto, dto)
+  const createCategoryDto = plainToClass(CategoryDto, dto)
 
   // validate the DTO using class validator
   const validationErrors = await validate(createCategoryDto)

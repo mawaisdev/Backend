@@ -1,7 +1,7 @@
 import { Response } from 'express'
 import { CategoryService } from '../Services/Category.Service'
 import { ExtendedRequest } from '../Services/types'
-import { CreateCAategoryValidator } from '../Utils/Scheme.Validators'
+import { CreateCategoryValidator } from '../Utils/Scheme.Validators'
 import { InternalServerErrorResponse } from '../Helpers/Category/Category.Helpers'
 
 export class CategoryController {
@@ -13,7 +13,7 @@ export class CategoryController {
   create = async (req: ExtendedRequest, res: Response) => {
     try {
       const { errors: validationErrors, dto: categoryDto } =
-        await CreateCAategoryValidator(req.body)
+        await CreateCategoryValidator(req.body)
 
       if (validationErrors.length > 0)
         return { response: [...validationErrors], status: 400 }
