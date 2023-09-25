@@ -99,5 +99,24 @@ export class CategoryService {
     }
   }
 
-  updateCategory = async (id: number, updatedData: Partial<Category>) => {}
+  updateCategory = async (
+    id: number,
+    updatedData: Partial<Category>
+  ): Promise<CategoryServiceResponse<Category>> => {
+    try {
+      await this.categoryRepository.update(id, updatedData)
+      const category = await this.categoryRepository.findOne({
+        where: { id: id },
+      })
+
+      return {
+        status: 200,
+        response: 'Updated Category Successfully',
+        data: category ? category : undefined,
+      }
+    } catch (error) {
+      console.log('Category Service Error: ', error)
+      return InternalServerErrorResponse()
+    }
+  }
 }
