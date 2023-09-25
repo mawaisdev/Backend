@@ -9,7 +9,7 @@ import {
 
 import { User } from './User'
 
-@Entity()
+@Entity('RefreshTokens')
 export class RefreshToken {
   @PrimaryGeneratedColumn()
   id: number

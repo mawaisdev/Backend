@@ -13,7 +13,7 @@ import { RefreshToken } from './RefreshToken'
 import { UserRole } from '../Config/UserRoles'
 import { Category } from './Category'
 
-@Entity()
+@Entity('Users')
 export class User {
   @PrimaryGeneratedColumn()
   id: number
