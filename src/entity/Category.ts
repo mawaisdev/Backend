@@ -25,7 +25,7 @@ export class Category {
   @CreateDateColumn({ nullable: true }) createdAt: Date
 
   @Column({ nullable: true })
-  updatedBy: number
+  updatedById: number
 
   @ManyToOne((type) => User, (user) => user.categories)
   createdBy: User

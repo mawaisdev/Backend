@@ -65,7 +65,7 @@ async function initializeApp() {
     app.use('/profile', profileRouter)
 
     // Routes for Categories
-    app.use('category', categoryRouter)
+    app.use('/category', categoryRouter)
 
     // Start the Express server on the specified port.
     app.listen(PORT, () => {

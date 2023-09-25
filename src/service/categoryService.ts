@@ -31,16 +31,26 @@ export class CategoryService {
       if (categoryFromDb)
         return createCategoryServiceResponse(400, 'Category already exist')
 
-      const category = await this.categoryRepository.save({
+      const categoryWithUser = await this.categoryRepository.save({
         name,
         description,
         createdBy: user,
       })
 
-      return createCategoryServiceResponse(
-        201,
-        'Category Created Successfully',
-        category
+      const category = await this.categoryRepository.findOne({
+        where: { id: categoryWithUser.id },
+      })
+      if (category)
+        return createCategoryServiceResponse(
+          201,
+          'Category Created Successfully',
+          category
+        )
+
+      return createCategoryServiceResponse<Category>(
+        404,
+        'Category Not Found.',
+        undefined
       )
     } catch (error) {
       console.error('Category Service Error: ', error)
@@ -50,7 +60,9 @@ export class CategoryService {
 
   getAllCategories = async () => {
     try {
-      const categories = this.categoryRepository.find()
+      const categories = await this.categoryRepository.find({
+        select: ['id', 'name', 'description', 'createdBy'],
+      })
       return {
         status: 200,
         data: categories,
