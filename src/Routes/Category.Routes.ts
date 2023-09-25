@@ -7,8 +7,13 @@ import { UserRole } from '../Config/UserRoles'
 const categoryRouter = Router()
 const categoryService = new CategoryService()
 
-const { create, getAllCategories, getCategoryById, updateCategory } =
-  new CategoryController(categoryService)
+const {
+  create,
+  getAllCategories,
+  getCategoryById,
+  updateCategory,
+  deleteCategory,
+} = new CategoryController(categoryService)
 
 categoryRouter
   .route('/')
@@ -19,4 +24,5 @@ categoryRouter
   .route('/:id')
   .get(getCategoryById)
   .patch(verifyRole(UserRole.Admin), updateCategory)
+  .delete(verifyRole(UserRole.Admin), deleteCategory)
 export { categoryRouter }

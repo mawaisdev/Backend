@@ -100,4 +100,23 @@ export class CategoryController {
       return InternalServerErrorResponse()
     }
   }
+
+  deleteCategory = async (req: ExtendedRequest, res: Response) => {
+    try {
+      const { id } = req.params
+      const user = req.user
+
+      if (!(id && Number(id) && user))
+        return { status: 400, response: 'Invalid Id', data: null }
+
+      const { status, response, data } =
+        await this.categoryService.deleteCategory(Number(id))
+      return res
+        .status(status)
+        .json({ status, response, data: data ? data : null })
+    } catch (error) {
+      console.error('Category Controller Error: ', error)
+      return InternalServerErrorResponse()
+    }
+  }
 }
