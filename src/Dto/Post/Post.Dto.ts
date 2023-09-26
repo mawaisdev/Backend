@@ -27,19 +27,7 @@ export class CreatePostDto {
   @IsBoolean()
   isPrivate?: boolean
 
-  @IsNotEmpty()
-  @IsInt()
-  createdBy: number
-
-  @IsNotEmpty()
-  @IsInt()
-  updatedBy: number
-
-  @IsNotEmpty()
-  @IsInt()
-  userId: number // assuming this will be provided in the DTO to link post to user
-
-  @IsOptional() // because it's nullable in your Post entity
+  @IsOptional()
   @IsInt()
   categoryId?: number // assuming this will be provided in the DTO to link post to category
 }

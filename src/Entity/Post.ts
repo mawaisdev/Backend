@@ -5,6 +5,7 @@ import {
   ManyToOne,
   CreateDateColumn,
   UpdateDateColumn,
+  JoinColumn,
 } from 'typeorm'
 import { User } from './User'
 import { Category } from './Category'
@@ -31,28 +32,32 @@ export class Post {
   @Column({ type: 'boolean', default: false })
   isPrivate: boolean // true means post is private, false means it's public
 
-  @Column()
-  createdBy: number // assuming this is the ID of the user who created the post
+  @Column({ nullable: true })
+  updatedBy: number // assuming this is the ID of the user who last updated the post
 
   @CreateDateColumn()
   createdAt: Date
 
-  @Column()
-  updatedBy: number // assuming this is the ID of the user who last updated the post
-
   @UpdateDateColumn()
   updatedAt: Date
+
+  @Column() // <-- Direct access to the foreign key
+  userId: number
+  @Column() // <-- Direct access to the foreign key
+  categoryId: number
 
   @ManyToOne(() => User, (user) => user.posts, {
     onDelete: 'CASCADE', // delete posts if the user is deleted
     nullable: false,
   })
+  @JoinColumn({ name: 'userId' }) // This ensures that the relation uses the userId column
   user: User
 
   @ManyToOne(() => Category, (category) => category.posts, {
     onDelete: 'SET NULL',
     nullable: true,
   })
+  @JoinColumn({ name: 'categoryId' }) // This ensures that the relation uses the categoryId column
   category: Category
 
   // Future placeholders for likes and comments
