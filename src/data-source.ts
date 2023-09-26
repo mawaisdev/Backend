@@ -3,6 +3,7 @@ import { DataSource } from 'typeorm'
 import { User } from './Entity/User'
 import { RefreshToken } from './Entity/RefreshToken'
 import { Category } from './Entity/Category'
+import { Post } from './Entity/Post'
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -13,7 +14,7 @@ export const AppDataSource = new DataSource({
   database: 'Posts',
   synchronize: true,
   logging: false,
-  entities: [User, RefreshToken, Category],
+  entities: [User, RefreshToken, Category, Post],
   migrations: [],
   subscribers: [],
 })
