@@ -22,6 +22,8 @@ gnome-terminal -- ngrok http 4000
 
 > **Note**: Make sure to modify the paths according to your system.
 
+> **Note**: If You are Using Windows you need to create a .bat file.
+
 ### 3. Modify Script Permissions
 
 Change the permissions to make the `.sh` file executable. This can typically be done using the command:
