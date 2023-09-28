@@ -1,4 +1,4 @@
-import { Request, Response } from 'express'
+import e, { Request, Response } from 'express'
 import { CreatePostValidator } from '../Utils/Scheme.Validators'
 import { ExtendedRequest } from '../Services/types'
 import { PostService } from '../Services/Post.Service'
@@ -66,6 +66,22 @@ export const deletePost = async (req: ExtendedRequest, res: Response) => {
     )
 
     return res.status(status).json({ status, response, data })
+  } catch (error) {
+    console.log('Post Controller Error: ', error)
+    return InternalServerErrorResponse()
+  }
+}
+
+export const getPostById = async (req: ExtendedRequest, res: Response) => {
+  try {
+    const postService = new PostService()
+
+    const id = req.params
+
+    const { data, response, status } = await postService.getPostById(Number(id))
+    return res
+      .status(status)
+      .json({ status, response, data: data ? data : null })
   } catch (error) {
     console.log('Post Controller Error: ', error)
     return InternalServerErrorResponse()
