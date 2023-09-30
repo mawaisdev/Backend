@@ -154,4 +154,3 @@ For any other request format.
 | 404         | Not Found             | The category was not found.            |
 | 500         | Internal Server Error | An unexpected server error occurred.   |
 
-### 13. Add Post
