@@ -17,9 +17,11 @@ import { LoginDto } from '../Dto/Auth/Login.Dto'
 // Utils and constants
 import {
   ACCESS_TOKEN_EXPIRES_IN,
+  REFRESH_TOKEN_EXPIRES_IN,
   ACCESS_TOKEN_SECRET,
   REFRESH_TOKEN_SECRET,
   dateNow,
+  region,
 } from '../Utils/Constants'
 import { generateJwt } from '../Utils/Jwt.helpers'
 
@@ -45,6 +47,7 @@ import {
   PasswordResetResponse,
   RefreshTokenValidateResponse,
 } from './types'
+import { DateTime } from 'luxon'
 
 /**
  * AuthService is responsible for user authentication operations.
@@ -142,19 +145,22 @@ export class AuthService {
    * @returns The authentication response which includes the token, refresh token, user data, status, and possible error.
    * @throws Will throw an error if unexpected issues occur during authentication.
    */
-
   async login(
     { userName, password }: LoginDto,
     req: Request
   ): Promise<LoginResponse> {
     try {
-      // Validate the user's credentials against the database.
+      /**
+       * Validate the user's credentials against the database.
+       */
       const user = await validateUser(
         { userName, password },
         this.userRepository
       )
 
-      // If no user found, respond with user not exist error.
+      /**
+       * If no user found, respond with user not exist error.
+       */
       if (!user) {
         return {
           token: undefined,
@@ -165,7 +171,9 @@ export class AuthService {
         }
       }
 
-      // If provided password doesn't match stored password, respond with invalid credentials error.
+      /**
+       * If provided password doesn't match stored password, respond with invalid credentials error.
+       */
       if (!(await isValidPassword(password, user.password))) {
         return {
           token: undefined,
@@ -176,7 +184,9 @@ export class AuthService {
         }
       }
 
-      // Generate JWT for authenticated user.
+      /**
+       * Generate JWT for authenticated user.
+       */
       const token = generateJwt(
         user,
         ACCESS_TOKEN_SECRET,
@@ -184,18 +194,24 @@ export class AuthService {
         user.role
       )
 
-      // Extract client's IP address.
+      /**
+       * Extract client's IP address.
+       */
       const clientIp = getIp(req)
 
-      // Retrieve existing refresh token for the user from the database.
+      /**
+       * Retrieve existing refresh token for the user from the database.
+       */
       let refreshTokenData = await findRefreshTokenForUserAndIp(
         user,
         clientIp,
         this.refreshTokenRepository
       )
 
-      // If no refresh token found and user hasn't reached their device limit, create a new refresh token.
       if (!refreshTokenData) {
+        /**
+         * If no refresh token found and user hasn't reached their device limit, create a new refresh token.
+         */
         if (await hasMaxLoggedDevices(user, this.refreshTokenRepository)) {
           return {
             token: undefined,
@@ -210,13 +226,45 @@ export class AuthService {
           clientIp,
           this.refreshTokenRepository
         )
+      } else {
+        try {
+          /**
+           * If there's an existing refresh token for the user, validate it.
+           */
+          jwt.verify(refreshTokenData.token, REFRESH_TOKEN_SECRET)
+        } catch (e) {
+          /**
+           * If the existing token is not valid (e.g., expired), generate a new one.
+           */
+          const newRefreshToken = generateJwt(
+            user,
+            REFRESH_TOKEN_SECRET,
+            REFRESH_TOKEN_EXPIRES_IN
+          )
+          const durationInSeconds = parseInt(
+            REFRESH_TOKEN_EXPIRES_IN.replace('s', ''),
+            10
+          )
+          const expiryDate = DateTime.now()
+            .setZone(region)
+            .plus({ seconds: durationInSeconds })
+            .toJSDate()
+          refreshTokenData.token = newRefreshToken
+          refreshTokenData.expiresAt = expiryDate
+          refreshTokenData.issuedAt = dateNow
+          await this.refreshTokenRepository.save(refreshTokenData)
+        }
       }
 
-      // Update user's last login timestamp and save it.
+      /**
+       * Update user's last login timestamp and save it.
+       */
       user.lastLogin = dateNow
       await this.userRepository.save(user)
 
-      // Return success response with generated tokens and user data.
+      /**
+       * Return success response with generated tokens and user data.
+       */
       return {
         token,
         refreshToken: refreshTokenData.token,
