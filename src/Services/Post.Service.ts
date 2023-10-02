@@ -69,4 +69,23 @@ export class PostService {
       return InternalServerErrorResponse()
     }
   }
+
+  // Get All User Specific Posts that are Public fetch Category and User
+
+  getAllPostsbyUserId = async (userId: number) => {
+    try {
+      const posts = await this.postRepository.find({
+        where: { userId },
+        relations: ['category', 'user'],
+      })
+      return {
+        status: 200,
+        response: 'Posts Fetched Successfully',
+        data: posts,
+      }
+    } catch (error) {
+      console.log('Post Service Error: ', error)
+      return InternalServerErrorResponse()
+    }
+  }
 }
