@@ -20,6 +20,8 @@ import { authRouter } from './Routes/Auth.Routes'
 import { postRouter } from './Routes/Post.Routes'
 import { profileRouter } from './Routes/Profile.Routes'
 import { categoryRouter } from './Routes/Category.Routes'
+import { getAllPosts, getPostById } from './Controller/Posts.Controller'
+import { validateId } from './Middleware/ValidateId'
 
 async function initializeApp() {
   try {
@@ -54,6 +56,8 @@ async function initializeApp() {
     app.use('/auth', authRouter)
 
     app.get('/', homePage)
+    app.get('/posts', getAllPosts)
+    app.get('/posts/:id', validateId, getPostById)
 
     // Apply JWT verification middleware.
     app.use(verifyJWT)
