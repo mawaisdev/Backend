@@ -443,6 +443,14 @@ export class AuthService {
     // Clear the reset token as it should not be reused.
     user.resetPasswordCode = ''
 
+    // Delete all refresh tokens associated with this user.
+    const tokens = await this.refreshTokenRepository.find({
+      relations: ['user'],
+      where: { user: { id: user.id } },
+    })
+
+    await this.refreshTokenRepository.remove(tokens)
+
     await this.userRepository.save(user)
 
     return { message: 'Password reset successfully.', error: undefined }

@@ -5,12 +5,15 @@ import { UserProfile } from './types'
 import { UpdatePasswordDto } from '../Dto/Auth/UpdatePassword.Dto'
 import { hashPassword, isValidPassword } from '../Helpers/Auth/Auth.Helpers'
 import { dateNow } from '../Utils/Constants'
+import { RefreshToken } from '../Entity/RefreshToken'
 
 export class ProfileService {
   private userRepository: Repository<User>
+  private refreshTokenRepository: Repository<RefreshToken>
 
   constructor() {
     this.userRepository = AppDataSource.getRepository(User)
+    this.refreshTokenRepository = AppDataSource.getRepository(RefreshToken)
   }
 
   getProfile = async (username: string): Promise<UserProfile | null> => {
@@ -58,6 +61,13 @@ export class ProfileService {
 
     user.password = await hashPassword(newPassword)
     user.updatedAt = dateNow
+    // Delete all refresh tokens associated with this user.
+    const tokens = await this.refreshTokenRepository.find({
+      relations: ['user'],
+      where: { user: { id: user.id } },
+    })
+
+    await this.refreshTokenRepository.remove(tokens)
 
     await this.userRepository.save(user)
     return { error: '', status: 200, message: 'Password Updated Successfully' }
