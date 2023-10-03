@@ -3,6 +3,7 @@ import { ProfileService } from '../Services/Profile.Service'
 import { ExtendedRequest } from '../Services/types'
 import { UpdatePasswordDto } from '../Dto/Auth/UpdatePassword.Dto'
 import { UpdatePasswordValidator } from '../Utils/Scheme.Validators'
+import { getIp } from '../Helpers/Auth/Auth.Helpers'
 
 /**
  * Controller to handle profile-related operations.
@@ -56,10 +57,13 @@ export class ProfileController {
       return this.sendBadRequestResponse(res, errors)
     }
 
+    // get the user ip
+    const ip = getIp(req)
     // Update password through service and send appropriate response
     const updateResult = await this.profileService.updatePassword(
       dto,
-      user.userName
+      user.userName,
+      ip
     )
     return res.status(updateResult.status).json(updateResult)
   }

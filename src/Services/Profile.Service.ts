@@ -1,4 +1,4 @@
-import { Repository } from 'typeorm'
+import { Not, Repository } from 'typeorm'
 import { User } from '../Entity/User'
 import { AppDataSource } from '../data-source'
 import { UserProfile } from './types'
@@ -36,7 +36,8 @@ export class ProfileService {
 
   updatePassword = async (
     { previousPassword, newPassword }: UpdatePasswordDto,
-    username: string
+    username: string,
+    ip: string
   ) => {
     const user = await this.userRepository.findOne({
       where: {
@@ -64,7 +65,7 @@ export class ProfileService {
     // Delete all refresh tokens associated with this user.
     const tokens = await this.refreshTokenRepository.find({
       relations: ['user'],
-      where: { user: { id: user.id } },
+      where: { user: { id: user.id }, ipAddress: Not(ip) },
     })
 
     await this.refreshTokenRepository.remove(tokens)
