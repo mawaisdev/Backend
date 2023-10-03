@@ -4,14 +4,42 @@ import { ExtendedRequest } from '../Services/types'
 import { PostService } from '../Services/Post.Service'
 import { InternalServerErrorResponse } from '../Helpers/Category/Category.Helpers'
 import { UserRole } from '../Config/UserRoles'
+import { CategoryService } from '../Services/Category.Service'
 
-export const getAllPosts = (req: Request, res: Response) => {
-  return res.status(200).json({ data: { name: 'Post 1' } })
+type GetAllPostsQueryType = {
+  skip?: number
+  take?: number
+}
+
+export const getAllPosts = async (req: Request, res: Response) => {
+  try {
+    const { skip, take } = req.query as GetAllPostsQueryType
+
+    const postService = new PostService()
+    const { status, response, data, totalPostsCount, CurrentCount } =
+      await postService.getAllPosts(
+        Number(skip ? skip : 0),
+        Number(take ? take : 10)
+      )
+
+    return res.status(status).json({
+      status,
+      response,
+      data,
+      totalPostsCount,
+      CurrentPostsCount: CurrentCount,
+    }) // <-- Return the total count here
+  } catch (error) {
+    console.log('Post Controller Error: ', error)
+    return InternalServerErrorResponse()
+  }
 }
 
 export const addPost = async (req: ExtendedRequest, res: Response) => {
   try {
     const postService = new PostService()
+    const categoryService = new CategoryService()
+
     const { errors: validationErrors, dto: postDto } =
       await CreatePostValidator(req.body)
 
@@ -29,7 +57,15 @@ export const addPost = async (req: ExtendedRequest, res: Response) => {
         response: 'Invalid User',
         data: null,
       }
-    user.id
+
+    if (postDto && postDto.categoryId) {
+      const category = await categoryService.getCategoryById(postDto.categoryId)
+      if (category.status === 404)
+        return res
+          .status(404)
+          .json({ status: 404, response: category.response, data: null })
+    }
+
     const { status, data, response } = await postService.createNewPost(
       postDto,
       user.id
@@ -47,7 +83,7 @@ export const deletePost = async (req: ExtendedRequest, res: Response) => {
     const user = req.user
 
     const { id: postId } = req.params
-    const postById = await postService.getPostById(Number(postId))
+    const postById = await postService.getPostById(postId)
     if (postById.status === 404)
       return res.status(postById.status).json({
         status: postById.status,
@@ -76,9 +112,19 @@ export const getPostById = async (req: ExtendedRequest, res: Response) => {
   try {
     const postService = new PostService()
 
-    const id = req.params
+    const { id } = req.params
 
-    const { data, response, status } = await postService.getPostById(Number(id))
+    const user = req.user
+    if (!user) {
+      const { data, response, status } = await postService.getPostById(id)
+      return res
+        .status(status)
+        .json({ status, response, data: data ? data : null })
+    }
+    const { data, response, status } = await postService.getPostById(
+      id,
+      user.id
+    )
     return res
       .status(status)
       .json({ status, response, data: data ? data : null })
