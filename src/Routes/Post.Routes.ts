@@ -1,12 +1,11 @@
-import { Router, Request, Response } from 'express'
+import { Router } from 'express'
 import {
   addPost,
   getAllPosts,
   deletePost,
   getPostById,
+  updatePost,
 } from '../Controller/Posts.Controller'
-import { UserRole } from '../Config/UserRoles'
-import { verifyRole } from '../Middleware/Verify.Role'
 import { validateId } from '../Middleware/ValidateId'
 
 const postRouter = Router()
@@ -16,6 +15,7 @@ postRouter
   .route('/:id')
   .delete(validateId, deletePost)
   .get(validateId, getPostById)
+  .patch(validateId, updatePost)
 // Secure Routes
 postRouter.route('/:id/users').get(validateId, getPostById)
 export { postRouter }

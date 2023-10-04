@@ -119,6 +119,39 @@ export class PostService {
     }
   }
 
+  // Update Post
+  updatePost = async (postId: number, dto: PostDto, userId: number) => {
+    try {
+      const { body, title, categoryId, imageUrl, isDraft, isPrivate } = dto
+      const post = await this.postRepository.findOne({
+        where: { id: postId },
+      })
+      if (!post) {
+        return { status: 404, response: 'Post Not Found', data: null }
+      }
+
+      if (post.userId !== userId) {
+        return { status: 403, response: 'Access Denied', data: null }
+      }
+      post.body = body
+      post.title = title
+      if (categoryId) post.categoryId = categoryId
+      if (imageUrl) post.imageUrl = imageUrl
+      if (isDraft) post.isDraft = isDraft
+      if (isPrivate) post.isPrivate = isPrivate
+      post.updatedAt = dateNow
+      await this.postRepository.save(post)
+      return {
+        status: 200,
+        response: 'Post Updated Successfully',
+        data: post,
+      }
+    } catch (error) {
+      console.log('Post Service Error: ', error)
+      return InternalServerErrorResponse()
+    }
+  }
+
   // Get All User Specific Posts that are Public fetch Category and User
 
   getAllPostsbyUserId = async (userId: number) => {

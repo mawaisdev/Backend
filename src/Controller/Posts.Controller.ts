@@ -133,3 +133,32 @@ export const getPostById = async (req: ExtendedRequest, res: Response) => {
     return InternalServerErrorResponse()
   }
 }
+
+export const updatePost = async (req: ExtendedRequest, res: Response) => {
+  try {
+    const postService = new PostService()
+    const user = req.user
+    if (!user)
+      return res
+        .status(401)
+        .json({ status: 401, response: 'Not Allowed', data: null })
+
+    const { id: postId } = req.params
+    const updatePostDto = req.body
+    const { errors, dto } = await CreatePostValidator(updatePostDto)
+    if (errors.length > 0)
+      return res
+        .status(400)
+        .json({ status: 400, response: 'Invalid Post Data', data: null })
+
+    const { data, response, status } = await postService.updatePost(
+      Number(postId),
+      updatePostDto,
+      user.id
+    )
+    return res.status(status).json({ status, response, data })
+  } catch (error) {
+    console.log('Post Controller Error: ', error)
+    return InternalServerErrorResponse()
+  }
+}
