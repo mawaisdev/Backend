@@ -1,7 +1,7 @@
 import { Repository } from 'typeorm'
 import { Post } from '../Entity/Post'
 import { AppDataSource } from '../data-source'
-import { CreatePostDto } from '../Dto/Post/Post.Dto'
+import { PostDto } from '../Dto/Post/Post.Dto'
 import { InternalServerErrorResponse } from '../Helpers/Category/Category.Helpers'
 import { dateNow } from '../Utils/Constants'
 import { User } from '../Entity/User'
@@ -25,7 +25,7 @@ export class PostService {
     this.categoryRepository = AppDataSource.getRepository(Category)
   }
 
-  createNewPost = async (dto: CreatePostDto, userId: number) => {
+  createNewPost = async (dto: PostDto, userId: number) => {
     try {
       const { body, title, categoryId, imageUrl, isDraft, isPrivate } = dto
       const post = await this.postRepository.save({
