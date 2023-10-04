@@ -6,11 +6,12 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   JoinColumn,
+  OneToMany,
 } from 'typeorm'
 import { User } from './User'
 import { Category } from './Category'
+import { Comment } from './Comment' // For future use
 // import { Like } from "./Like";    // For future use
-// import { Comment } from "./Comment";  // For future use
 
 @Entity('Posts')
 export class Post {
@@ -64,8 +65,8 @@ export class Post {
   // @OneToMany(() => Like, like => like.post)
   // likes: Like[];
 
-  // @OneToMany(() => Comment, comment => comment.post)
-  // comments: Comment[];
+  @OneToMany(() => Comment, (comment) => comment.post)
+  comments: Comment[]
 
   // You can still add other fields like created at, updated at, etc.
 }

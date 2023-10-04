@@ -13,6 +13,7 @@ import { RefreshToken } from './RefreshToken'
 import { UserRole } from '../Config/UserRoles'
 import { Category } from './Category'
 import { Post } from './Post'
+import { Comment } from './Comment'
 
 @Entity('Users')
 export class User {
@@ -105,4 +106,7 @@ export class User {
 
   @OneToMany(() => Post, (post) => post.user)
   posts: Post[]
+
+  @OneToMany(() => Comment, (comment) => comment.user)
+  comments: Comment[]
 }
