@@ -38,6 +38,8 @@ export class Comment {
   @JoinColumn({ name: 'parentId' })
   parent: Comment | null
 
-  @OneToMany(() => Comment, (comment) => comment.parent)
+  @OneToMany(() => Comment, (comment) => comment.parent, {
+    onDelete: 'CASCADE',
+  })
   children: Comment[]
 }

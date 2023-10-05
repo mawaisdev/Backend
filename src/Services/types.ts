@@ -2,6 +2,7 @@ import { UserRole } from '../Config/UserRoles'
 import { User } from '../Entity/User'
 import { Request } from 'express'
 import { ResetPasswordDto } from '../Dto/Auth/ResetPassword.Dto'
+import { Comment } from '../Entity/Comment'
 
 // User-related types.
 export type LoggedInUserData = {
@@ -74,5 +75,11 @@ export type resetPasswordRequest = {
 export type CategoryServiceResponse<T> = {
   status: number
   response?: string
+  data?: T
+}
+
+export type CommentServiceResponse<T> = {
+  status: number
+  response: string
   data?: T
 }

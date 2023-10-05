@@ -7,6 +7,7 @@ import { ResetPasswordValidation } from '../Services/types'
 import { UpdatePasswordDto } from '../Dto/Auth/UpdatePassword.Dto'
 import { CategoryDto } from '../Dto/Category/Category.Dto'
 import { PostDto } from '../Dto/Post/Post.Dto'
+import { CommentDTO } from '../Dto/Comment/Comment.Dto'
 
 /**
  * Type definition for the result of data validation.
@@ -105,6 +106,14 @@ export const CreatePostValidator = async (dto: PostDto) => {
   const errors = extractErrorMessages(validationErrors)
 
   return { errors, dto: createPostDto }
+}
+
+export const CommentDtoValidator = async (dto: CommentDTO) => {
+  const commentDto = plainToClass(CommentDTO, dto)
+  const validationErrors = await validate(commentDto)
+  const errors = extractErrorMessages(validationErrors)
+
+  return { errors, dto: commentDto }
 }
 
 // Utility to extract error messages from validation results

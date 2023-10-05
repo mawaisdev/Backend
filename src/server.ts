@@ -20,6 +20,7 @@ import { authRouter } from './Routes/Auth.Routes'
 import { postRouter } from './Routes/Post.Routes'
 import { profileRouter } from './Routes/Profile.Routes'
 import { categoryRouter } from './Routes/Category.Routes'
+import { commentRouter } from './Routes/Comment.Route'
 import { getAllPosts, getPostById } from './Controller/Posts.Controller'
 import { validateId } from './Middleware/ValidateId'
 
@@ -70,6 +71,9 @@ async function initializeApp() {
 
     // Routes for Categories
     app.use('/category', categoryRouter)
+
+    // Routes for Comments
+    app.use('/comments', commentRouter)
 
     // Start the Express server on the specified port.
     app.listen(PORT, () => {
