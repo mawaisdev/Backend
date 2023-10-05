@@ -79,7 +79,12 @@ export class CommentService {
     id: number,
     userId: number // Adding the authenticated userId to the function
   ): Promise<CommentServiceResponse<Comment>> {
-    const comment = await this.commentRepository.findOne({ where: { id } })
+    const comment = await this.commentRepository
+      .createQueryBuilder('comment')
+      .select(['comment.id', 'comment.text', 'user.id'])
+      .leftJoin('comment.user', 'user')
+      .where('comment.id = :commentId', { commentId: id })
+      .getOne()
 
     if (!comment) {
       return { status: 404, response: 'Comment not found.' }
@@ -144,13 +149,30 @@ export class CommentService {
   ): Promise<CommentServiceResponse<Comment[]>> {
     try {
       // Fetch comments based on postId and parentId
-      const comments = await this.commentRepository.find({
-        where: {
-          post: { id: postId },
-          parent: parentId ? { id: parentId } : undefined,
-        },
-        relations: ['user'], // fetching the user of each comment
-      })
+      const comments = await this.commentRepository
+        .createQueryBuilder('comment')
+        .select([
+          'comment.id',
+          'comment.text',
+          'user.id',
+          'post.id',
+          'parent.id',
+        ])
+        .leftJoin('comment.user', 'user')
+        .leftJoin('comment.post', 'post')
+        .leftJoin('comment.parent', 'parent')
+        .where('comment.post = :postId', { postId: postId })
+        .andWhere(
+          parentId ? 'comment.parent = :parentId' : 'comment.parent IS NULL',
+          {
+            parentId: parentId,
+          }
+        )
+        .getMany()
+
+      if (comments.length === 0) {
+        return { status: 404, response: 'No comments found.' }
+      }
 
       // For each comment, check if it has child comments
       const commentsWithHasChild = await Promise.all(

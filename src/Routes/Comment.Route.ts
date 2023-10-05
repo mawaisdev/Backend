@@ -6,9 +6,14 @@ import { validateId } from '../Middleware/ValidateId'
 const commentRouter = Router()
 const commentService = new CommentService()
 const commentController = new CommentController(commentService)
-const { addComment, deleteComment } = commentController
+const { addComment, deleteComment, updateComment, getCommentsForPost } =
+  commentController
 
 commentRouter.route('/').post(addComment)
-commentRouter.route('/:id').delete(validateId, deleteComment)
+commentRouter
+  .route('/:id')
+  .delete(validateId, deleteComment)
+  .patch(validateId, updateComment)
+commentRouter.route('/:id/posts').get(validateId, getCommentsForPost)
 
 export { commentRouter }
