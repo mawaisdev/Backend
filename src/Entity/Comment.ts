@@ -6,6 +6,7 @@ import {
   JoinColumn,
   OneToMany,
   CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm'
 import { User } from './User'
 import { Post } from './Post'
@@ -20,6 +21,9 @@ export class Comment {
 
   @CreateDateColumn()
   createdAt: Date
+
+  @UpdateDateColumn()
+  updatedAt: Date
 
   @ManyToOne(() => Post, (post) => post.comments)
   @JoinColumn({ name: 'postId' })
