@@ -134,7 +134,7 @@ export class CommentService {
 
     return {
       status: 200,
-      response: 'Comment (and child comments) deleted successfully.',
+      response: 'Comment deleted successfully.',
     }
   }
 

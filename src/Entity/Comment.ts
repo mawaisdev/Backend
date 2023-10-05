@@ -34,12 +34,13 @@ export class Comment {
   user: User
 
   // Self-referencing relationship
-  @ManyToOne(() => Comment, (comment) => comment.children)
+  @ManyToOne(() => Comment, (comment) => comment.children, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'parentId' })
   parent: Comment | null
 
-  @OneToMany(() => Comment, (comment) => comment.parent, {
-    onDelete: 'CASCADE',
-  })
+  @OneToMany(() => Comment, (comment) => comment.parent)
   children: Comment[]
 }
+4

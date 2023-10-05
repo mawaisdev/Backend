@@ -34,7 +34,9 @@ export class CommentController {
         .json({ status, response, data: data ? data : null })
     } catch (error) {
       console.log('Comment Controller Error: ', error)
-      return { status: 500, response: 'Internal Server Error.', data: null }
+      return res
+        .status(500)
+        .json({ status: 500, response: 'Internal Server Error.', data: null })
     }
   }
 
@@ -47,14 +49,20 @@ export class CommentController {
           .status(401)
           .json({ status: 401, response: 'Unauthorized', data: null })
       const commentId = Number(req.params.id)
-      const {} = await this.commentService.deleteComment(
-        commentId,
-        userId,
-        userRole ? userRole : UserRole.User
-      )
+      const { response, status, data } =
+        await this.commentService.deleteComment(
+          commentId,
+          userId,
+          userRole ? userRole : UserRole.User
+        )
+      return res
+        .status(status)
+        .json({ status, response, data: data ? data : null })
     } catch (error) {
       console.log('Comment Controller Error: ', error)
-      return { status: 500, response: 'Internal Server Error.', data: null }
+      return res
+        .status(500)
+        .json({ status: 500, response: 'Internal Server Error.', data: null })
     }
   }
 }
