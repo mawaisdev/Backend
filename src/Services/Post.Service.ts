@@ -6,6 +6,7 @@ import { InternalServerErrorResponse } from '../Helpers/Category/Category.Helper
 import { dateNow } from '../Utils/Constants'
 import { User } from '../Entity/User'
 import { Category } from '../Entity/Category'
+import { CommentService } from './Comment.Service'
 
 type getAllPostsType = {
   status: number
@@ -16,13 +17,11 @@ type getAllPostsType = {
 }
 export class PostService {
   private postRepository: Repository<Post>
-  private userRepository: Repository<User>
-  private categoryRepository: Repository<Category>
+  private commentService: CommentService
 
   constructor() {
     this.postRepository = AppDataSource.getRepository(Post)
-    this.userRepository = AppDataSource.getRepository(User)
-    this.categoryRepository = AppDataSource.getRepository(Category)
+    this.commentService = new CommentService()
   }
 
   createNewPost = async (dto: PostDto, userId: number) => {
@@ -84,9 +83,14 @@ export class PostService {
         .where('post.id = :postId', { postId: Number(postId) })
         .getOne()
 
+      const comments = await this.commentService.getCommentsForPost(
+        Number(postId),
+        null
+      )
       if (!post) {
         return { status: 404, response: 'Post Not Found', data: null }
       }
+      post.comments = comments.data ? comments.data : []
 
       // If post is neither draft nor private, return to anyone
       if (!post.isDraft && !post.isPrivate) {

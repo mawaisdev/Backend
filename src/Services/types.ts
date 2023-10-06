@@ -1,8 +1,8 @@
 import { UserRole } from '../Config/UserRoles'
 import { User } from '../Entity/User'
+import { Comment } from '../Entity/Comment'
 import { Request } from 'express'
 import { ResetPasswordDto } from '../Dto/Auth/ResetPassword.Dto'
-import { Comment } from '../Entity/Comment'
 
 // User-related types.
 export type LoggedInUserData = {
@@ -24,10 +24,15 @@ export type UserProfile = {
 }
 
 export interface ExtendedRequest extends Request {
-  user?: LoggedInUserData // You might have used another type here
+  user?: LoggedInUserData
 }
 
 // Auth-related types.
+export type CompleteResetResponse = {
+  error?: string
+  message?: string
+}
+
 export type CreateUserResponse = {
   errors?: string
   user?: User
@@ -41,12 +46,6 @@ export type LoginResponse = {
   userData?: LoggedInUserData
 }
 
-export type RefreshTokenValidateResponse = {
-  errors?: string
-  status?: number
-  token?: string
-}
-
 export type LogoutResponse = {
   errors?: string
 }
@@ -55,9 +54,10 @@ export type PasswordResetResponse = {
   message?: string
 }
 
-export type CompleteResetResponse = {
-  error?: string
-  message?: string
+export type RefreshTokenValidateResponse = {
+  errors?: string
+  status?: number
+  token?: string
 }
 
 export type ResetPasswordValidation = {
@@ -71,15 +71,20 @@ export type resetPasswordRequest = {
   password?: string
 }
 
+// Comment-related types.
+export type CommentServiceResponse<T> = {
+  status: number
+  response: string
+  data?: T
+}
+
+export interface CommentsDbResponse extends Comment {
+  childCount: number
+}
+
 // Generic service response.
 export type CategoryServiceResponse<T> = {
   status: number
   response?: string
-  data?: T
-}
-
-export type CommentServiceResponse<T> = {
-  status: number
-  response: string
   data?: T
 }

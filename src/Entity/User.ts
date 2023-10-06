@@ -101,7 +101,7 @@ export class User {
   })
   refreshTokens: RefreshToken[]
 
-  @OneToMany((type) => Category, (category) => category.createdBy)
+  @OneToMany(() => Category, (category) => category.createdBy)
   categories: Category[]
 
   @OneToMany(() => Post, (post) => post.user)
