@@ -216,10 +216,17 @@ export class CommentService {
         postId,
         parentId
       )
-      const commentsWithHasChild = commentsWithChildCounts.map((comment) => ({
-        ...comment,
-        hasChild: comment.childCount > 0,
-      }))
+
+      const commentsWithHasChild = commentsWithChildCounts.map((comment) => {
+        const hasChildStatus = comment.childcount > 0
+        const childCount = comment.childcount
+        return {
+          ...comment,
+          childCount,
+          childcount: undefined,
+          hasChild: hasChildStatus,
+        }
+      })
 
       // Return the successfully fetched comments.
       return {

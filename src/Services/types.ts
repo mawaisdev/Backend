@@ -79,7 +79,7 @@ export type CommentServiceResponse<T> = {
 }
 
 export interface CommentsDbResponse extends Comment {
-  childCount: number
+  childcount: number
 }
 
 // Generic service response.
