@@ -30,10 +30,10 @@ export class CategoryService {
    * @param {number} userId - ID of the user creating the category.
    * @returns {Promise<CategoryServiceResponse<Category>>} - Response with status and data.
    */
-  createCategory = async (
+  async createCategory(
     { name, description }: CategoryDto,
     userId: number
-  ): Promise<CategoryServiceResponse<Category>> => {
+  ): Promise<CategoryServiceResponse<Category>> {
     try {
       // Check if category already exists in DB.
       const categoryFromDb = await this.categoryRepository
@@ -75,7 +75,7 @@ export class CategoryService {
    *
    * @returns {Promise<CategoryServiceResponse<Category[]>>} - Response with status and data.
    */
-  getAllCategories = async (): Promise<CategoryServiceResponse<Category[]>> => {
+  async getAllCategories(): Promise<CategoryServiceResponse<Category[]>> {
     try {
       // Fetch all categories.
       const categories = await this.categoryRepository.find({
@@ -98,9 +98,9 @@ export class CategoryService {
    * @param {number} categoryId - ID of the category.
    * @returns {Promise<CategoryServiceResponse<Category>>} - Response with status and data.
    */
-  getCategoryById = async (
+  async getCategoryById(
     categoryId: number
-  ): Promise<CategoryServiceResponse<Category>> => {
+  ): Promise<CategoryServiceResponse<Category>> {
     try {
       // Fetch category by its ID.
       const category = await this.categoryRepository.findOne({
@@ -122,10 +122,10 @@ export class CategoryService {
    * @param {Partial<Category>} updatedData - Updated data for the category.
    * @returns {Promise<CategoryServiceResponse<Category>>} - Response with status and data.
    */
-  updateCategory = async (
+  async updateCategory(
     id: number,
     updatedData: Partial<Category>
-  ): Promise<CategoryServiceResponse<Category>> => {
+  ): Promise<CategoryServiceResponse<Category>> {
     try {
       // Update the category.
       await this.categoryRepository.update(id, updatedData)
@@ -151,9 +151,7 @@ export class CategoryService {
    * @param {number} id - ID of the category to delete.
    * @returns {Promise<CategoryServiceResponse<Category>>} - Response with status and data.
    */
-  deleteCategory = async (
-    id: number
-  ): Promise<CategoryServiceResponse<Category>> => {
+  async deleteCategory(id: number): Promise<CategoryServiceResponse<Category>> {
     try {
       // Fetch category for deletion.
       const category = await this.categoryRepository.findOne({

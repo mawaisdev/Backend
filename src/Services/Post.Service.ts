@@ -24,7 +24,7 @@ export class PostService {
     this.commentService = new CommentService()
   }
 
-  createNewPost = async (dto: PostDto, userId: number) => {
+  async createNewPost(dto: PostDto, userId: number) {
     try {
       const { body, title, categoryId, imageUrl, isDraft, isPrivate } = dto
       const post = await this.postRepository.save({
@@ -51,7 +51,7 @@ export class PostService {
     }
   }
 
-  deletePost = async (postId: number) => {
+  async deletePost(postId: number) {
     const post = await this.postRepository.findOne({
       where: { id: postId },
       select: ['id', 'title', 'body', 'isPrivate', 'isDraft'],
@@ -60,7 +60,7 @@ export class PostService {
     await this.postRepository.remove(post)
     return { status: 200, response: 'Post deleted Successfully', data: post }
   }
-  getPostById = async (postId: string, userId?: number) => {
+  async getPostById(postId: string, userId?: number) {
     try {
       const post = await this.postRepository
         .createQueryBuilder('post')
@@ -124,7 +124,7 @@ export class PostService {
   }
 
   // Update Post
-  updatePost = async (postId: number, dto: PostDto, userId: number) => {
+  async updatePost(postId: number, dto: PostDto, userId: number) {
     try {
       const { body, title, categoryId, imageUrl, isDraft, isPrivate } = dto
       const post = await this.postRepository.findOne({
@@ -158,7 +158,7 @@ export class PostService {
 
   // Get All User Specific Posts that are Public fetch Category and User
 
-  getAllPostsbyUserId = async (userId: number) => {
+  async getAllPostsbyUserId(userId: number) {
     try {
       const posts = await this.postRepository.find({
         where: { userId },
@@ -176,7 +176,7 @@ export class PostService {
   }
 
   // Get All Posts that are Public fetch Category and User
-  getAllPosts = async (skip = 0, take = 10): Promise<getAllPostsType> => {
+  async getAllPosts(skip = 0, take = 10): Promise<getAllPostsType> {
     try {
       const posts = await this.getPostsFromDb(skip, take)
 
@@ -203,7 +203,7 @@ export class PostService {
     }
   }
 
-  getPostsFromDb = async (skip = 0, take = 10) => {
+  async getPostsFromDb(skip = 0, take = 10) {
     const posts = await this.postRepository
       .createQueryBuilder('post')
       .select([

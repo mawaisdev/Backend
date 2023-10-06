@@ -24,7 +24,7 @@ export class ProfileService {
    * @param username - The username of the user.
    * @returns The user profile or null if not found.
    */
-  getProfile = async (username: string): Promise<UserProfile | null> => {
+  async getProfile(username: string): Promise<UserProfile | null> {
     // Fetch user data based on username
     const userData = await this.userRepository.findOne({
       where: { userName: username },
@@ -50,11 +50,11 @@ export class ProfileService {
    * @param ip - The IP address of the request.
    * @returns An object containing the status, error, and message.
    */
-  updatePassword = async (
+  async updatePassword(
     { previousPassword, newPassword }: UpdatePasswordDto,
     username: string,
     ip: string
-  ) => {
+  ) {
     // Find the user by username
     const user = await this.userRepository.findOne({
       where: {
