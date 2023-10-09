@@ -1,8 +1,19 @@
+// External libraries
 import { Response } from 'express'
-import { ProfileService } from '../Services/Profile.Service'
-import { ExtendedRequest } from '../Services/types'
+
+// DTOs (Data Transfer Objects)
 import { UpdatePasswordDto } from '../Dto/Auth/UpdatePassword.Dto'
+
+// Services
+import { ProfileService } from '../Services/Profile.Service'
+
+// Types and interfaces
+import { ExtendedRequest } from '../Services/types'
+
+// Validators
 import { UpdatePasswordValidator } from '../Utils/Scheme.Validators'
+
+// Helpers
 import { getIp } from '../Helpers/Auth/Auth.Helpers'
 
 /**

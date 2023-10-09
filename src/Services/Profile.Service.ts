@@ -1,5 +1,4 @@
 import { Not, Repository } from 'typeorm'
-import { AppDataSource } from '../data-source'
 import { User } from '../Entity/User'
 import { RefreshToken } from '../Entity/RefreshToken'
 import { UserProfile } from './types'
@@ -14,9 +13,12 @@ export class ProfileService {
   private userRepository: Repository<User>
   private refreshTokenRepository: Repository<RefreshToken>
 
-  constructor() {
-    this.userRepository = AppDataSource.getRepository(User)
-    this.refreshTokenRepository = AppDataSource.getRepository(RefreshToken)
+  constructor(
+    userRepository: Repository<User>,
+    refreshTokenRepository: Repository<RefreshToken>
+  ) {
+    this.userRepository = userRepository
+    this.refreshTokenRepository = refreshTokenRepository
   }
 
   /**
