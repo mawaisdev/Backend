@@ -1,11 +1,8 @@
 import { Repository } from 'typeorm'
 import { Post } from '../Entity/Post'
-import { AppDataSource } from '../data-source'
 import { PostDto } from '../Dto/Post/Post.Dto'
 import { InternalServerErrorResponse } from '../Helpers/Category/Category.Helpers'
 import { dateNow } from '../Utils/Constants'
-import { User } from '../Entity/User'
-import { Category } from '../Entity/Category'
 import { CommentService } from './Comment.Service'
 
 type getAllPostsType = {
@@ -19,9 +16,12 @@ export class PostService {
   private postRepository: Repository<Post>
   private commentService: CommentService
 
-  constructor() {
-    this.postRepository = AppDataSource.getRepository(Post)
-    this.commentService = new CommentService()
+  constructor(
+    postRepository: Repository<Post>,
+    commentService: CommentService
+  ) {
+    this.postRepository = postRepository
+    this.commentService = commentService
   }
 
   async createNewPost(dto: PostDto, userId: number) {

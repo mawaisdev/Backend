@@ -1,40 +1,77 @@
-import e, { Request, Response } from 'express'
-import { CreatePostValidator } from '../Utils/Scheme.Validators'
-import { ExtendedRequest } from '../Services/types'
-import { PostService } from '../Services/Post.Service'
-import { InternalServerErrorResponse } from '../Helpers/Category/Category.Helpers'
+// 1. Framework specific imports
+import { Request, Response } from 'express'
+
+// 2. Configuration and constants
 import { UserRole } from '../Config/UserRoles'
+
+// 3. Data sources and utilities
+import { AppDataSource } from '../data-source'
+
+// 4. Types and interfaces
+import { ExtendedRequest } from '../Services/types'
+
+// 5. Entities or models
+import { Post } from '../Entity/Post'
+import { Comment } from '../Entity/Comment'
+import { Category } from '../Entity/Category'
+import { User } from '../Entity/User'
+
+// 6. Services
+import { PostService } from '../Services/Post.Service'
 import { CategoryService } from '../Services/Category.Service'
+import { CommentService } from '../Services/Comment.Service'
+
+// 7. Helpers and validators
+import { InternalServerErrorResponse } from '../Helpers/Category/Category.Helpers'
+import { CreatePostValidator } from '../Utils/Scheme.Validators'
 
 type GetAllPostsQueryType = {
   skip?: number
   take?: number
 }
+
 /**
- * Fetches all posts with optional pagination.
+ * Retrieve all posts based on pagination parameters.
  *
- * @param req - The request object containing optional query parameters: `skip` and `take`.
- * @param res - The response object.
- * @returns Response object with status, message, and list of posts.
- *          Also includes `totalPostsCount` for total posts in the database and `CurrentPostsCount`
- *          representing the number of posts in the current batch.
+ * @param {Request} req - Express request object containing query parameters for pagination.
+ * @param {Response} res - Express response object used to send the data back to the client.
+ * @returns {Response} Returns the posts in a paginated format, along with status, response, total post count, and current post count.
  */
 export const getAllPosts = async (req: Request, res: Response) => {
   try {
-    // Extract pagination options from query parameters
+    /**
+     * Extract pagination parameters from request query.
+     */
     const { skip, take } = req.query as GetAllPostsQueryType
 
-    // Initialize post service instance
-    const postService = new PostService()
+    /**
+     * Get post and comment repositories from the data source.
+     */
+    const postRepository = AppDataSource.getRepository(Post)
+    const commentRepository = AppDataSource.getRepository(Comment)
 
-    // Fetch posts using the service
+    /**
+     * Initialize comment service with repositories.
+     */
+    const commentService = new CommentService(commentRepository, postRepository)
+
+    /**
+     * Initialize post service with repositories and services.
+     */
+    const postService = new PostService(postRepository, commentService)
+
+    /**
+     * Fetch all posts using post service.
+     */
     const { status, response, data, totalPostsCount, CurrentCount } =
       await postService.getAllPosts(
-        Number(skip ? skip : 0),
-        Number(take ? take : 10)
+        Number(skip ? skip : 0), // Default to 0 if skip is not provided.
+        Number(take ? take : 10) // Default to 10 if take is not provided.
       )
 
-    // Return the fetched posts along with the total count and current count
+    /**
+     * Return the fetched posts in the response.
+     */
     return res.status(status).json({
       status,
       response,
@@ -43,31 +80,46 @@ export const getAllPosts = async (req: Request, res: Response) => {
       CurrentPostsCount: CurrentCount,
     })
   } catch (error) {
-    // Log any unexpected errors and send a generic error response
+    /**
+     * Log any unexpected errors and return a server error response.
+     */
     console.log('Post Controller Error: ', error)
     return InternalServerErrorResponse()
   }
 }
 
 /**
- * Handles the addition of a new post. Validates the provided post data,
- * checks the associated category, and ensures the user is authorized.
+ * Add a new post.
  *
- * @param req - The request object containing post data and the user who created the request.
- * @param res - The response object.
- * @returns Response object with status, message, and the created post (if successful).
+ * @param {ExtendedRequest} req - Extended request object containing user and body data.
+ * @param {Response} res - Express response object used to send the data back to the client.
+ * @returns {Response} Returns a status and response message based on the post creation result.
  */
 export const addPost = async (req: ExtendedRequest, res: Response) => {
   try {
-    // Initialize post and category service instances
-    const postService = new PostService()
-    const categoryService = new CategoryService()
+    /**
+     * Obtain post and comment repositories from the data source.
+     */
+    const postRepository = AppDataSource.getRepository(Post)
+    const commentRepository = AppDataSource.getRepository(Comment)
+    const commentService = new CommentService(commentRepository, postRepository)
+    const postService = new PostService(postRepository, commentService)
 
-    // Validate the incoming post data
+    /**
+     * Obtain category and user repositories from the data source.
+     */
+    const categoryRepository = AppDataSource.getRepository(Category)
+    const userRepository = AppDataSource.getRepository(User)
+    const categoryService = new CategoryService(
+      categoryRepository,
+      userRepository
+    )
+
+    /**
+     * Validate the request body for post creation.
+     */
     const { errors: validationErrors, dto: postDto } =
       await CreatePostValidator(req.body)
-
-    // If there are validation errors, return a 400 Bad Request
     if (validationErrors.length > 0) {
       return res.status(400).json({
         status: 400,
@@ -76,7 +128,9 @@ export const addPost = async (req: ExtendedRequest, res: Response) => {
       })
     }
 
-    // Check if the request has an associated user
+    /**
+     * Validate user from request.
+     */
     const user = req.user
     if (!user) {
       return res.status(400).json({
@@ -86,7 +140,9 @@ export const addPost = async (req: ExtendedRequest, res: Response) => {
       })
     }
 
-    // If a category ID is provided in the post data, check if it's valid
+    /**
+     * If a category ID is provided, validate the category.
+     */
     if (postDto && postDto.categoryId) {
       const category = await categoryService.getCategoryById(postDto.categoryId)
       if (category.status === 404) {
@@ -98,41 +154,62 @@ export const addPost = async (req: ExtendedRequest, res: Response) => {
       }
     }
 
-    // Attempt to create a new post using the service
+    /**
+     * Create a new post using the post service.
+     */
     const { status, data, response } = await postService.createNewPost(
       postDto,
       user.id
     )
 
-    // Return the response (either the created post or an error message)
+    /**
+     * Return the post creation result.
+     */
     return res.status(status).json({ status, response, data })
   } catch (error) {
-    // Log any unexpected errors and send a generic error response
+    /**
+     * Log any unexpected errors and return a server error response.
+     */
     console.log('Post Controller Error: ', error)
     return InternalServerErrorResponse()
   }
 }
 
 /**
- * Handles the deletion of a post based on the given ID.
- * Only the original post author or an admin can delete the post.
+ * Delete a post based on its ID.
+ * Only the user who created the post or an admin can delete it.
  *
- * @param req - The request object containing the post ID and the user who initiated the request.
- * @param res - The response object.
- * @returns Response object with status and message.
+ * @param {ExtendedRequest} req - Extended request object containing user data and post ID in params.
+ * @param {Response} res - Express response object used to send the deletion result back to the client.
+ * @returns {Response} Returns a status and response message based on the post deletion result.
  */
 export const deletePost = async (req: ExtendedRequest, res: Response) => {
   try {
-    // Initialize post service instance
-    const postService = new PostService()
+    /**
+     * Obtain post and comment repositories from the data source.
+     */
+    const postRepository = AppDataSource.getRepository(Post)
+    const commentRepository = AppDataSource.getRepository(Comment)
 
-    // Retrieve user from the request
+    /**
+     * Initialize comment and post services with the respective repositories.
+     */
+    const commentService = new CommentService(commentRepository, postRepository)
+    const postService = new PostService(postRepository, commentService)
+
+    /**
+     * Extract user information from the request object.
+     */
     const user = req.user
 
-    // Extract post ID from the request parameters
+    /**
+     * Extract the post ID from the request parameters.
+     */
     const { id: postId } = req.params
 
-    // Check if the post exists
+    /**
+     * Check if the post with the given ID exists.
+     */
     const postById = await postService.getPostById(postId)
     if (postById.status === 404) {
       return res.status(postById.status).json({
@@ -142,7 +219,9 @@ export const deletePost = async (req: ExtendedRequest, res: Response) => {
       })
     }
 
-    // Ensure the request initiator is either the post author or an admin
+    /**
+     * Ensure that only the user who created the post or an admin can delete it.
+     */
     if (
       !(user?.roles === UserRole.Admin || user?.id === postById.data?.user.id)
     ) {
@@ -153,40 +232,61 @@ export const deletePost = async (req: ExtendedRequest, res: Response) => {
       })
     }
 
-    // Attempt to delete the post
+    /**
+     * Delete the post using the post service.
+     */
     const { status, response, data } = await postService.deletePost(
       Number(postId)
     )
 
-    // Return the response indicating the result of the deletion attempt
+    /**
+     * Return the post deletion result.
+     */
     return res.status(status).json({ status, response, data })
   } catch (error) {
-    // Log any unexpected errors and send a generic error response
+    /**
+     * Log any unexpected errors and return a server error response.
+     */
     console.log('Post Controller Error: ', error)
     return InternalServerErrorResponse()
   }
 }
 
 /**
- * Retrieves a post based on the given ID.
- * If the request is made by a logged-in user, additional user-specific information might be included.
+ * Retrieve a post based on its ID.
+ * If the user is authenticated, additional details related to the user might be fetched.
  *
- * @param req - The request object containing the post ID and optional user data.
- * @param res - The response object.
- * @returns Response object with status, message, and the retrieved post.
+ * @param {ExtendedRequest} req - Extended request object containing user data and post ID in params.
+ * @param {Response} res - Express response object used to send the fetched post data back to the client.
+ * @returns {Response} Returns a status, response message, and post data based on the search result.
  */
 export const getPostById = async (req: ExtendedRequest, res: Response) => {
   try {
-    // Initialize post service instance
-    const postService = new PostService()
+    /**
+     * Obtain post and comment repositories from the data source.
+     */
+    const postRepository = AppDataSource.getRepository(Post)
+    const commentRepository = AppDataSource.getRepository(Comment)
 
-    // Extract post ID from request parameters
+    /**
+     * Initialize comment and post services with the respective repositories.
+     */
+    const commentService = new CommentService(commentRepository, postRepository)
+    const postService = new PostService(postRepository, commentService)
+
+    /**
+     * Extract the post ID from the request parameters.
+     */
     const { id } = req.params
 
-    // Retrieve user from request, if available
+    /**
+     * Extract user information from the request object.
+     */
     const user = req.user
 
-    // If there's no logged-in user, retrieve the post without user-specific details
+    /**
+     * If the user is not authenticated, fetch the post without any user-specific details.
+     */
     if (!user) {
       const { data, response, status } = await postService.getPostById(id)
       return res
@@ -194,53 +294,74 @@ export const getPostById = async (req: ExtendedRequest, res: Response) => {
         .json({ status, response, data: data ? data : null })
     }
 
-    // If there's a logged-in user, retrieve the post with potential user-specific details
+    /**
+     * If the user is authenticated, fetch the post with potential user-specific details.
+     */
     const { data, response, status } = await postService.getPostById(
       id,
       user.id
     )
 
-    // Return the fetched post
+    /**
+     * Return the fetched post data.
+     */
     return res
       .status(status)
       .json({ status, response, data: data ? data : null })
   } catch (error) {
-    // Log unexpected errors and send a generic error response
+    /**
+     * Log any unexpected errors and return a server error response.
+     */
     console.log('Post Controller Error: ', error)
     return InternalServerErrorResponse()
   }
 }
 
 /**
- * Updates an existing post based on the provided post ID and data.
- * Only the original post author can update the post.
+ * Update a post based on its ID and the provided data.
+ * Only the authenticated user who created the post or has sufficient rights can update it.
  *
- * @param req - The request object containing the post ID, update data, and optional user data.
- * @param res - The response object.
- * @returns Response object with status, message, and the updated post data.
+ * @param {ExtendedRequest} req - Extended request object containing user data, post ID in params, and update data in body.
+ * @param {Response} res - Express response object used to send the update result back to the client.
+ * @returns {Response} Returns a status, response message, and post data based on the update result.
  */
 export const updatePost = async (req: ExtendedRequest, res: Response) => {
   try {
-    // Initialize post service instance
-    const postService = new PostService()
+    /**
+     * Obtain post and comment repositories from the data source.
+     */
+    const postRepository = AppDataSource.getRepository(Post)
+    const commentRepository = AppDataSource.getRepository(Comment)
 
-    // Retrieve user from request
+    /**
+     * Initialize comment and post services with the respective repositories.
+     */
+    const commentService = new CommentService(commentRepository, postRepository)
+    const postService = new PostService(postRepository, commentService)
+
+    /**
+     * Extract user information from the request object.
+     */
     const user = req.user
 
-    // If no user is authenticated, return unauthorized
+    /**
+     * Ensure the user is authenticated before proceeding.
+     */
     if (!user) {
       return res
         .status(401)
         .json({ status: 401, response: 'Not Allowed', data: null })
     }
 
-    // Extract post ID from request parameters
+    /**
+     * Extract the post ID from the request parameters and the update data from the request body.
+     */
     const { id: postId } = req.params
-
-    // Get update data from request body
     const updatePostDto = req.body
 
-    // Validate the provided post update data
+    /**
+     * Validate the update data using a post validator.
+     */
     const { errors, dto } = await CreatePostValidator(updatePostDto)
     if (errors.length > 0) {
       return res
@@ -248,17 +369,23 @@ export const updatePost = async (req: ExtendedRequest, res: Response) => {
         .json({ status: 400, response: 'Invalid Post Data', data: null })
     }
 
-    // Attempt to update the post
+    /**
+     * Update the post using the post service.
+     */
     const { data, response, status } = await postService.updatePost(
       Number(postId),
       updatePostDto,
       user.id
     )
 
-    // Return the result of the update operation
+    /**
+     * Return the post update result.
+     */
     return res.status(status).json({ status, response, data })
   } catch (error) {
-    // Log unexpected errors and send a generic error response
+    /**
+     * Log any unexpected errors and return a server error response.
+     */
     console.log('Post Controller Error: ', error)
     return InternalServerErrorResponse()
   }
