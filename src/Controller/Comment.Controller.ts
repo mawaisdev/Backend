@@ -1,9 +1,20 @@
-import { CommentDTO } from '../Dto/Comment/Comment.Dto'
-import { CommentService } from '../Services/Comment.Service'
-import { ExtendedRequest } from '../Services/types'
+// External libraries
 import { Response } from 'express'
-import { CommentDtoValidator } from '../Utils/Scheme.Validators'
+
+// Configuration and constants
 import { UserRole } from '../Config/UserRoles'
+
+// DTOs (Data Transfer Objects)
+import { CommentDTO } from '../Dto/Comment/Comment.Dto'
+
+// Services
+import { CommentService } from '../Services/Comment.Service'
+
+// Types and interfaces
+import { ExtendedRequest } from '../Services/types'
+
+// Validators
+import { CommentDtoValidator } from '../Utils/Scheme.Validators'
 
 export class CommentController {
   private commentService: CommentService

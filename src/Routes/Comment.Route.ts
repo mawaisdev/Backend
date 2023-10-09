@@ -2,9 +2,16 @@ import { Router } from 'express'
 import { CommentController } from '../Controller/Comment.Controller'
 import { CommentService } from '../Services/Comment.Service'
 import { validateId } from '../Middleware/ValidateId'
+import { AppDataSource } from '../data-source'
+import { Post } from '../Entity/Post'
+import { Comment } from '../Entity/Comment'
 
 const commentRouter = Router()
-const commentService = new CommentService()
+
+const commentRepository = AppDataSource.getRepository(Comment)
+const postRepository = AppDataSource.getRepository(Post)
+
+const commentService = new CommentService(commentRepository, postRepository)
 const commentController = new CommentController(commentService)
 const { addComment, deleteComment, updateComment, getCommentsForPost } =
   commentController

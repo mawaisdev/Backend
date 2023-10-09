@@ -2,7 +2,6 @@
 import { Repository } from 'typeorm'
 
 // Application's internal modules and configurations
-import { AppDataSource } from '../data-source'
 import { CommentServiceResponse, CommentsDbResponse } from './types'
 import { CommentDTO } from '../Dto/Comment/Comment.Dto'
 import { Post } from '../Entity/Post'
@@ -22,12 +21,15 @@ export class CommentService {
   /**
    * Initializes the CommentService by setting up repositories for Comment and Post entities.
    */
-  constructor() {
+  constructor(
+    commentRepository: Repository<Comment>,
+    postRepository: Repository<Post>
+  ) {
     // Set up the Comment repository.
-    this.commentRepository = AppDataSource.getRepository(Comment)
+    this.commentRepository = commentRepository
 
     // Set up the Post repository.
-    this.postRepository = AppDataSource.getRepository(Post)
+    this.postRepository = postRepository
   }
 
   /**
