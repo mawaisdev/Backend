@@ -7,9 +7,6 @@ import { Repository } from 'typeorm'
 import { User } from '../Entity/User'
 import { RefreshToken } from '../Entity/RefreshToken'
 
-// Data sources
-import { AppDataSource } from '../data-source'
-
 // DTOs
 import { SignupDto } from '../Dto/Auth/Signup.Dto'
 import { LoginDto } from '../Dto/Auth/Login.Dto'
@@ -70,9 +67,12 @@ export class AuthService {
   /**
    * Initializes a new instance of the AuthService and sets up the required repositories.
    */
-  constructor() {
-    this.userRepository = AppDataSource.getRepository(User)
-    this.refreshTokenRepository = AppDataSource.getRepository(RefreshToken)
+  constructor(
+    userRepository: Repository<User>,
+    refreshTokenRepository: Repository<RefreshToken>
+  ) {
+    this.userRepository = userRepository
+    this.refreshTokenRepository = refreshTokenRepository
   }
 
   /**

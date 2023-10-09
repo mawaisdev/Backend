@@ -62,14 +62,24 @@ export class AuthController {
 
       // Signup was successful, return the user details with a status of 201 (Created).
 
-      const loggingInUser = await this.authService.login(
+      const {
+        token,
+        status,
+        error: response,
+        userData,
+      } = await this.authService.login(
         { userName: signupDto.userName, password: signupDto.password },
         req
       )
       return res.status(201).json({
         status: 201,
         errors: [],
-        userData: loggingInUser,
+        data: {
+          response,
+          status,
+          token,
+          userData,
+        },
       })
     } catch (error) {
       // Log any unexpected errors and return a general error message.
