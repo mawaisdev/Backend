@@ -4,9 +4,14 @@ import { CategoryController } from '../Controller/Category.Controller'
 import { verifyRole } from '../Middleware/Verify.Role'
 import { validateId } from '../Middleware/ValidateId'
 import { UserRole } from '../Config/UserRoles'
+import { AppDataSource } from '../data-source'
+import { User } from '../Entity/User'
+import { Category } from '../Entity/Category'
 
 const categoryRouter = Router()
-const categoryService = new CategoryService()
+const userRepository = AppDataSource.getRepository(User)
+const categoryRepository = AppDataSource.getRepository(Category)
+const categoryService = new CategoryService(categoryRepository, userRepository)
 
 const {
   create,

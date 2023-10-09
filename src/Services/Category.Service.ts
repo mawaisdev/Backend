@@ -7,7 +7,6 @@ import {
   InternalServerErrorResponse,
   fetchCategoryById,
 } from '../Helpers/Category/Category.Helpers'
-import { AppDataSource } from '../data-source'
 import { CategoryServiceResponse } from './types'
 
 /**
@@ -17,10 +16,13 @@ export class CategoryService {
   private categoryRepository: Repository<Category>
   private userRepository: Repository<User>
 
-  constructor() {
+  constructor(
+    categoryRepository: Repository<Category>,
+    userRepository: Repository<User>
+  ) {
     // Initializing category and user repositories.
-    this.categoryRepository = AppDataSource.getRepository(Category)
-    this.userRepository = AppDataSource.getRepository(User)
+    this.categoryRepository = categoryRepository
+    this.userRepository = userRepository
   }
 
   /**

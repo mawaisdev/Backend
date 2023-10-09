@@ -1,13 +1,22 @@
+// External libraries
+import { Response } from 'express'
+
+// Services
+import { CategoryService } from '../Services/Category.Service'
+
+// Types and interfaces
+import { ExtendedRequest } from '../Services/types'
+
+// Helpers
 import {
   sendErrorResponse,
   sendSuccessResponse,
   InternalServerErrorResponse,
 } from '../Helpers/Category/Category.Helpers'
-import { CategoryService } from '../Services/Category.Service'
-import { ExtendedRequest } from '../Services/types'
+
+// Utils, validators, and constants
 import { dateNow } from '../Utils/Constants'
 import { CreateCategoryValidator } from '../Utils/Scheme.Validators'
-import { Response } from 'express'
 
 /**
  * Controller to handle category operations.
