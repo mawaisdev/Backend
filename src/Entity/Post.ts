@@ -11,7 +11,6 @@ import {
 import { User } from './User'
 import { Category } from './Category'
 import { Comment } from './Comment' // For future use
-// import { Like } from "./Like";    // For future use
 
 @Entity('Posts')
 export class Post {
@@ -33,7 +32,7 @@ export class Post {
   @Column({ type: 'boolean', default: false })
   isPrivate: boolean // true means post is private, false means it's public
 
-  @Column({ nullable: true })
+  @Column()
   updatedBy: number // assuming this is the ID of the user who last updated the post
 
   @CreateDateColumn()
@@ -60,10 +59,6 @@ export class Post {
   })
   @JoinColumn({ name: 'categoryId' }) // This ensures that the relation uses the categoryId column
   category: Category
-
-  // Future placeholders for likes and comments
-  // @OneToMany(() => Like, like => like.post)
-  // likes: Like[];
 
   @OneToMany(() => Comment, (comment) => comment.post)
   comments: Comment[]

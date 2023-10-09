@@ -36,6 +36,7 @@ export class PostService {
         isPrivate,
         userId,
         categoryId,
+        updatedBy: userId,
       })
 
       // const post = await this.postRepository.save(postSave)

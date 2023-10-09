@@ -43,4 +43,3 @@ export class Comment {
   @OneToMany(() => Comment, (comment) => comment.parent)
   children: Comment[]
 }
-4

@@ -210,7 +210,7 @@ export const deletePost = async (req: ExtendedRequest, res: Response) => {
     /**
      * Check if the post with the given ID exists.
      */
-    const postById = await postService.getPostById(postId)
+    const postById = await postService.getPostById(postId, user?.id)
     if (postById.status === 404) {
       return res.status(postById.status).json({
         status: postById.status,
