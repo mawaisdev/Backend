@@ -104,6 +104,7 @@ export class AuthService {
         return {
           errors: 'User with this email or username already exists',
           user: undefined,
+          status: 409,
         }
       }
 
@@ -129,7 +130,7 @@ export class AuthService {
       // Save the new user entity into the database.
       await this.userRepository.save(user)
 
-      return { errors: undefined, user }
+      return { errors: undefined, user, status: 201 }
     } catch (error) {
       console.error('Signup error:', error)
       throw new Error('An unexpected error occurred during signup.')

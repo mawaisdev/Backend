@@ -36,6 +36,7 @@ export type CompleteResetResponse = {
 export type CreateUserResponse = {
   errors?: string
   user?: User
+  status: number
 }
 
 export type LoginResponse = {

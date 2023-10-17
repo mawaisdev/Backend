@@ -18,7 +18,7 @@ import {
 
 export class AuthController {
   private authService: AuthService
-  private JWT_COOKIE_MAX_AGE = COOKIE_MAX_AGE
+  // private JWT_COOKIE_MAX_AGE = COOKIE_MAX_AGE
 
   constructor(authService: AuthService) {
     this.authService = authService
@@ -47,14 +47,16 @@ export class AuthController {
       }
 
       // Use the authService to handle the signup logic.
-      const { errors: serviceErrors, user } = await this.authService.signup(
-        signupDto
-      )
+      const {
+        errors: serviceErrors,
+        user,
+        status: serviceStatus,
+      } = await this.authService.signup(signupDto)
 
       // If there are service-level errors, return them.
       if (serviceErrors) {
         return res.status(400).json({
-          status: 400,
+          status: serviceStatus,
           errors: [serviceErrors],
           user: undefined,
         })
@@ -65,21 +67,22 @@ export class AuthController {
       const {
         token,
         status,
+        refreshToken,
         error: response,
         userData,
       } = await this.authService.login(
         { userName: signupDto.userName, password: signupDto.password },
         req
       )
+
+      // Set a cookie for the refresh token.
+      this.CreateCookie(refreshToken, res)
       return res.status(201).json({
-        status: 201,
+        status,
         errors: [],
-        data: {
-          response,
-          status,
-          token,
-          userData,
-        },
+        response,
+        token,
+        userData,
       })
     } catch (error) {
       // Log any unexpected errors and return a general error message.
@@ -135,12 +138,7 @@ export class AuthController {
       }
 
       // Set a cookie for the refresh token.
-      res.cookie('jwt', refreshToken, {
-        httpOnly: true,
-        maxAge: this.JWT_COOKIE_MAX_AGE,
-        secure: IS_PRODUCTION,
-        sameSite: 'none',
-      })
+      this.CreateCookie(refreshToken, res)
 
       // Login was successful, return the token, user data, and an empty error array with a status of 201 (Created).
       return res.status(status).json({
@@ -325,5 +323,14 @@ export class AuthController {
         message: 'An unexpected error occurred while processing your request.',
       })
     }
+  }
+
+  CreateCookie(refreshToken: string | undefined, res: Response) {
+    res.cookie('jwt', refreshToken, {
+      httpOnly: true,
+      maxAge: COOKIE_MAX_AGE,
+      secure: IS_PRODUCTION,
+      sameSite: 'none',
+    })
   }
 }
