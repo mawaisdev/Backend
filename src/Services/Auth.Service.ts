@@ -352,9 +352,10 @@ export class AuthService {
         jwt.verify(tokenFromCookies, REFRESH_TOKEN_SECRET, (error, decoded) => {
           // If there's an error during verification, resolve the promise with an error message.
           if (error) {
+            console.log(error)
             resolve({
-              errors: 'Token verification failed',
-              status: 400,
+              errors: 'Invalid or expired token',
+              status: 403,
               token: undefined,
             })
             return
