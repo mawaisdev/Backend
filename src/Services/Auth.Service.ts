@@ -378,7 +378,12 @@ export class AuthService {
             user.role
           )
           // Resolve the promise with the new access token.
-          resolve({ errors: undefined, status: 201, token: accessToken })
+          resolve({
+            errors: undefined,
+            status: 201,
+            token: accessToken,
+            roles: user.role,
+          })
         })
       })
     } catch (error) {
