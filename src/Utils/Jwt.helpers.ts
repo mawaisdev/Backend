@@ -8,7 +8,6 @@ import { RefreshToken } from '../Entity/RefreshToken'
 import { AppDataSource } from '../data-source'
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || ''
-const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || ''
 
 /**
  * Generates a JWT (JSON Web Token) for a given user with specified parameters.

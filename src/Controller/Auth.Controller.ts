@@ -47,11 +47,8 @@ export class AuthController {
       }
 
       // Use the authService to handle the signup logic.
-      const {
-        errors: serviceErrors,
-        user,
-        status: serviceStatus,
-      } = await this.authService.signup(signupDto)
+      const { errors: serviceErrors, status: serviceStatus } =
+        await this.authService.signup(signupDto)
 
       // If there are service-level errors, return them.
       if (serviceErrors) {
@@ -330,7 +327,7 @@ export class AuthController {
       httpOnly: true,
       maxAge: COOKIE_MAX_AGE,
       secure: IS_PRODUCTION,
-      sameSite: 'none',
+      // sameSite: 'none',
     })
   }
 }
