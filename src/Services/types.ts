@@ -59,7 +59,7 @@ export type RefreshTokenValidateResponse = {
   errors?: string
   status?: number
   token?: string
-  roles?: UserRole
+  userData?: LoggedInUserData
 }
 
 export type ResetPasswordValidation = {

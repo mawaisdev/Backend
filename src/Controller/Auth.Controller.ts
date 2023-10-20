@@ -237,7 +237,7 @@ export class AuthController {
       errors,
       status = 201,
       token,
-      roles,
+      userData,
     } = await this.authService.refreshToken(tokenFromCookies)
 
     // If there are errors during the refresh process, return the appropriate status and error message.
@@ -254,7 +254,7 @@ export class AuthController {
       status,
       errors: [],
       token,
-      roles: roles ? roles : null,
+      userData: userData,
     })
   }
 

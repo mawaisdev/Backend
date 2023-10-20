@@ -382,7 +382,12 @@ export class AuthService {
             errors: undefined,
             status: 201,
             token: accessToken,
-            roles: user.role,
+            userData: {
+              userName: user.userName,
+              email: user.email,
+              id: user.id,
+              roles: user.role,
+            },
           })
         })
       })
