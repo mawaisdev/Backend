@@ -36,6 +36,8 @@
   "scripts": {
     "start": "ts-node src/server.ts",
     "typeorm": "typeorm-ts-node-commonjs",
-    "dev": "nodemon"
+    "dev": "nodemon",
+    "migrate:gen":"npx typeorm-ts-node-esm migration:generate ./src/Migration/Migration-Name -d ./src/data-source.ts",
+    "migrate:run": "npx typeorm-ts-node-esm migration:run -d ./src/data-source.ts"
   }
 }
