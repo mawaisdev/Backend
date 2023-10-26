@@ -214,6 +214,7 @@ export class PostService {
         'post.body',
         'post.createdAt',
         'post.updatedAt',
+        'post.imageUrl',
         'category.id',
         'category.name', // Selecting only the 'name' field from 'category'
         'user.id',
