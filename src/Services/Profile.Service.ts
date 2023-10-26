@@ -4,7 +4,8 @@ import { RefreshToken } from '../Entity/RefreshToken'
 import { UserProfile } from './types'
 import { UpdatePasswordDto } from '../Dto/Auth/UpdatePassword.Dto'
 import { hashPassword, isValidPassword } from '../Helpers/Auth/Auth.Helpers'
-import { dateNow } from '../Utils/Constants'
+import { DateTime } from 'luxon'
+import { region } from '../Utils/Constants'
 
 /**
  * ProfileService provides functionality to manage user profiles.
@@ -85,7 +86,7 @@ export class ProfileService {
 
     // Update the user password and set the updated timestamp
     user.password = await hashPassword(newPassword)
-    user.updatedAt = dateNow
+    user.updatedAt = DateTime.now().setZone(region).toJSDate()
 
     // Remove all refresh tokens for the user, excluding the current session IP
     const tokens = await this.refreshTokenRepository.find({

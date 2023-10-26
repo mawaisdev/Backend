@@ -8,7 +8,6 @@ import {
   MAX_LOGGED_DEVICES,
   REFRESH_TOKEN_SECRET,
   REFRESH_TOKEN_EXPIRES_IN,
-  dateNow,
   region,
 } from '../../Utils/Constants'
 import { generateJwt } from '../../Utils/Jwt.helpers'
@@ -112,7 +111,7 @@ const createNewRefreshToken = async (
     10
   )
 
-  const currentDate = dateNow
+  const currentDate = DateTime.now().setZone(region).toJSDate()
   const expiryDate = DateTime.now()
     .setZone(region)
     .plus({ seconds: durationInSeconds })

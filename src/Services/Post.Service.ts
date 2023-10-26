@@ -2,8 +2,9 @@ import { Repository } from 'typeorm'
 import { Post } from '../Entity/Post'
 import { PostDto } from '../Dto/Post/Post.Dto'
 import { InternalServerErrorResponse } from '../Helpers/Category/Category.Helpers'
-import { dateNow } from '../Utils/Constants'
 import { CommentService } from './Comment.Service'
+import { DateTime } from 'luxon'
+import { region } from '../Utils/Constants'
 
 type getAllPostsType = {
   status: number
@@ -29,7 +30,7 @@ export class PostService {
       const { body, title, categoryId, imageUrl, isDraft, isPrivate } = dto
       const post = await this.postRepository.save({
         body,
-        createdAt: dateNow,
+        createdAt: DateTime.now().setZone(region).toJSDate(),
         imageUrl,
         isDraft,
         title,
@@ -144,7 +145,7 @@ export class PostService {
       if (imageUrl) post.imageUrl = imageUrl
       if (isDraft) post.isDraft = isDraft
       if (isPrivate) post.isPrivate = isPrivate
-      post.updatedAt = dateNow
+      post.updatedAt = DateTime.now().setZone(region).toJSDate()
       await this.postRepository.save(post)
       return {
         status: 200,

@@ -17,7 +17,6 @@ import {
   REFRESH_TOKEN_EXPIRES_IN,
   ACCESS_TOKEN_SECRET,
   REFRESH_TOKEN_SECRET,
-  dateNow,
   region,
 } from '../Utils/Constants'
 import { generateJwt } from '../Utils/Jwt.helpers'
@@ -109,7 +108,7 @@ export class AuthService {
       }
 
       // Generate the current date for user timestamps.
-      const currentDate = dateNow
+      const currentDate = DateTime.now().setZone(region).toJSDate()
 
       // Securely hash the provided password.
       const hashedPassword = await hashPassword(password)
@@ -252,7 +251,7 @@ export class AuthService {
             .toJSDate()
           refreshTokenData.token = newRefreshToken
           refreshTokenData.expiresAt = expiryDate
-          refreshTokenData.issuedAt = dateNow
+          refreshTokenData.issuedAt = DateTime.now().setZone(region).toJSDate()
           await this.refreshTokenRepository.save(refreshTokenData)
         }
       }
@@ -260,7 +259,7 @@ export class AuthService {
       /**
        * Update user's last login timestamp and save it.
        */
-      user.lastLogin = dateNow
+      user.lastLogin = DateTime.now().setZone(region).toJSDate()
       await this.userRepository.save(user)
 
       /**
@@ -450,7 +449,7 @@ export class AuthService {
     user.password = hashedPassword
 
     // Set the updated timestamp.
-    user.updatedAt = dateNow
+    user.updatedAt = DateTime.now().setZone(region).toJSDate()
 
     // Clear the reset token as it should not be reused.
     user.resetPasswordCode = ''

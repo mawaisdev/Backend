@@ -15,8 +15,9 @@ import {
 } from '../Helpers/Category/Category.Helpers'
 
 // Utils, validators, and constants
-import { dateNow } from '../Utils/Constants'
 import { CreateCategoryValidator } from '../Utils/Scheme.Validators'
+import { DateTime } from 'luxon'
+import { region } from '../Utils/Constants'
 
 /**
  * Controller to handle category operations.
@@ -111,7 +112,7 @@ export class CategoryController {
         return sendErrorResponse(res, 400, validationErrors.join(', '))
 
       // Set updated details.
-      const updatedAt = dateNow
+      const updatedAt = DateTime.now().setZone(region).toJSDate()
       const updatedById = user.id
       const { name, description } = categoryDto
 
