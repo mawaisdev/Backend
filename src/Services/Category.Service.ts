@@ -40,7 +40,7 @@ export class CategoryService {
       // Check if category already exists in DB.
       const categoryFromDb = await this.categoryRepository
         .createQueryBuilder('category')
-        .where('category.name ILIKE :name', { name: `%${name}%` })
+        .where('LOWER(category.name) = LOWER(:name)', { name: name })
         .getOne()
 
       if (categoryFromDb)
