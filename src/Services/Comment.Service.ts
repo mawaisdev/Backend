@@ -181,8 +181,8 @@ export class CommentService {
     // Ensure only the comment's author, post's author, or an admin can delete the comment.
     if (
       comment.user.id !== userId &&
-      comment.post.user.id !== userId &&
-      userRole !== UserRole.Admin
+      userRole !== UserRole.Admin &&
+      comment.post.userId !== userId
     ) {
       return {
         status: 403,
@@ -260,6 +260,7 @@ export class CommentService {
         // Define fields to select in the resulting data set.
         'comment.id', // Select comment ID.
         'comment.text', // Select comment text.
+        'comment.userId',
         'COUNT(childComments.id) as childCount', // Count the number of child comments.
       ])
       .where('comment.post = :postId', { postId: postId }) // Filter comments belonging to a specific post.
