@@ -13,14 +13,12 @@ const postRepository = AppDataSource.getRepository(Post)
 
 const commentService = new CommentService(commentRepository, postRepository)
 const commentController = new CommentController(commentService)
-const { addComment, deleteComment, updateComment, getCommentsForPost } =
-  commentController
+const { addComment, deleteComment, updateComment } = commentController
 
 commentRouter.route('/').post(addComment)
 commentRouter
   .route('/:id')
   .delete(validateId, deleteComment)
   .patch(validateId, updateComment)
-commentRouter.route('/:id/posts').get(validateId, getCommentsForPost)
 
 export { commentRouter }

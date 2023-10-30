@@ -1,5 +1,5 @@
 // External libraries
-import { Response } from 'express'
+import { Response, Request } from 'express'
 
 // Configuration and constants
 import { UserRole } from '../Config/UserRoles'
@@ -181,7 +181,7 @@ export class CommentController {
    * @param res - The response object.
    * @returns Response object with status, message, and fetched comments.
    */
-  getCommentsForPost = async (req: ExtendedRequest, res: Response) => {
+  getCommentsForPost = async (req: Request, res: Response) => {
     try {
       // Extract post ID from request parameters
       const postId = Number(req.params.id)

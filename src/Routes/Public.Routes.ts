@@ -31,10 +31,27 @@ const homePage = async (req: Request, res: Response) => {
   })
 }
 
+// Setting up Get Comments for Post
+import { CommentController } from '../Controller/Comment.Controller'
+import { CommentService } from '../Services/Comment.Service'
+import { AppDataSource } from '../data-source'
+import { Post } from '../Entity/Post'
+import { Comment } from '../Entity/Comment'
+
+const commentRepository = AppDataSource.getRepository(Comment)
+const postRepository = AppDataSource.getRepository(Post)
+
+const commentService = new CommentService(commentRepository, postRepository)
+const commentController = new CommentController(commentService)
+const { getCommentsForPost } = commentController
+
+/// End Here
+
 // Public routes
 publicRouter.get('/', homePage)
 publicRouter.get('/posts', getAllPosts)
 publicRouter.get('/posts/:id', validateId, getPostById)
+publicRouter.get('/allcomments/:id/comments', validateId, getCommentsForPost)
 publicRouter.use('/auth', authRouter)
 
-export { publicRouter }
+export { publicRouter, getCommentsForPost }
