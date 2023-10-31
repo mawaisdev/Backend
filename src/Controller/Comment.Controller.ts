@@ -64,10 +64,16 @@ export class CommentController {
         commentDto
       )
 
-      // Send the result as the response
-      return res
-        .status(status)
-        .json({ status, response, data: data ? data : null })
+      if (status === 201) {
+        const result = {
+          comment_Id: data?.id,
+          comment_text: data?.text,
+          childCount: 0,
+          hasChild: false,
+          userId,
+        }
+        return res.status(status).json({ status, response, data: result })
+      }
     } catch (error) {
       // Log and return any unexpected errors
       console.log('Comment Controller Error: ', error)
