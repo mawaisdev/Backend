@@ -201,22 +201,46 @@ export class CommentService {
   }
 
   /**
-   * Retrieves comments associated with a given post.
+   * Retrieves comments associated with a given post with pagination.
    * If a parent ID is provided, the function fetches child comments for that specific parent comment.
    * Otherwise, it retrieves top-level comments (those without a parent).
    *
    * @param postId - The ID of the post whose comments are to be fetched.
    * @param parentId - An optional parent comment ID to fetch specific child comments.
-   * @returns - A service response that includes the status, a response message, and the fetched comments.
+   * @param page - The current page number.
+   * @param perPage - The number of comments to retrieve per page.
+   * @returns - A service response that includes the status, a response message, and the fetched comments for the specified page.
    */
   async getCommentsForPost(
     postId: number,
-    parentId: number | null
+    parentId: number | null,
+    page: number,
+    perPage: number
   ): Promise<CommentServiceResponse<Comment[]>> {
     try {
+      // Calculate the offset based on the current page and comments per page.
+      const offset = (page - 1) * perPage
+
+      // Query to count the total comments for the post.
+      const totalCommentsQuery = await this.commentRepository
+        .createQueryBuilder('comment')
+        .where('comment.post = :postId', { postId: postId })
+
+      if (parentId === null) {
+        totalCommentsQuery.andWhere('comment.parent IS NULL')
+      } else {
+        totalCommentsQuery.andWhere('comment.parent = :parentId', {
+          parentId: parentId,
+        })
+      }
+
+      const totalComments = await totalCommentsQuery.getCount()
+
       const commentsWithChildCounts = await this.fetchCommentsWithChildCounts(
         postId,
-        parentId
+        parentId,
+        offset,
+        perPage
       )
 
       const commentsWithHasChild = commentsWithChildCounts.map((comment) => {
@@ -230,12 +254,21 @@ export class CommentService {
         }
       })
 
-      // Return the successfully fetched comments.
-      return {
+      // Calculate the remaining comments.
+      const remainingComments = Math.max(totalComments - (offset + perPage), 0)
+
+      // Create the response object with the additional fields.
+      const response = {
         status: 200,
         response: 'Comments fetched successfully',
         data: commentsWithHasChild,
+        totalCommentsCount: totalComments,
+        pageNumber: page,
+        pageSize: perPage,
+        remainingCommentsCount: remainingComments,
       }
+
+      return response
     } catch (error) {
       console.log('Comment Service Error: ', error)
       return { status: 500, response: 'Internal server error' }
@@ -243,15 +276,19 @@ export class CommentService {
   }
 
   /**
-   * Fetches comments for a specific post with the count of child comments for each of them.
+   * Fetches comments for a specific post with the count of child comments for each of them with pagination.
    *
    * @param postId - ID of the target post.
    * @param parentId - ID of the parent comment (if fetching child comments).
+   * @param offset - The offset to start fetching comments from.
+   * @param limit - The maximum number of comments to retrieve.
    * @returns Promise resolving to an array of comments with child counts.
    */
   async fetchCommentsWithChildCounts(
     postId: number,
-    parentId: number | null
+    parentId: number | null,
+    offset: number,
+    limit: number
   ): Promise<CommentsDbResponse[]> {
     return await this.commentRepository
       .createQueryBuilder('comment') // Initialize a query targeting the Comment entity.
@@ -270,6 +307,8 @@ export class CommentService {
         { parentId: parentId }
       )
       .groupBy('comment.id') // Group by comment ID to cater for the COUNT function.
+      .offset(offset) // Offset for pagination.
+      .limit(limit) // Limit the number of comments per page.
       .getRawMany() // Fetch raw data (not entity instances) and get multiple records.
   }
 }

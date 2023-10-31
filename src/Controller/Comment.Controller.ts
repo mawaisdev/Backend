@@ -189,22 +189,40 @@ export class CommentController {
    */
   getCommentsForPost = async (req: Request, res: Response) => {
     try {
-      // Extract post ID from request parameters
       const postId = Number(req.params.id)
-
-      // Check if a parent ID is provided in query parameters
       const parentId = req.query.parentId ? Number(req.query.parentId) : null
 
-      // Use the service to fetch comments for the post
-      const { response, status, data } =
-        await this.commentService.getCommentsForPost(postId, parentId)
+      // Define the page and perPage values for pagination.
+      const page = Number(req.query.page) || 1 // Default to page 1 if not provided.
+      const perPage = Number(req.query.perPage) || 10 // Default to 10 comments per page if not provided.
 
-      // Return the response from the service
+      const {
+        response,
+        status,
+        data,
+        totalCommentsCount,
+        remainingCommentsCount,
+        pageNumber,
+        pageSize,
+      } = await this.commentService.getCommentsForPost(
+        postId,
+        parentId,
+        page, // Pass the page value.
+        perPage // Pass the perPage value.
+      )
+
       return res
         .status(status)
-        .json({ status, response, data: data ? data : null })
+        .json({
+          status,
+          response,
+          data: data ? data : null,
+          totalCommentsCount,
+          remainingCommentsCount,
+          pageNumber,
+          pageSize,
+        })
     } catch (error) {
-      // Log and return any unexpected errors
       console.log('Comment Controller Error: ', error)
       return res
         .status(500)

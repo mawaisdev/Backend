@@ -3,6 +3,7 @@ import { User } from '../Entity/User'
 import { Comment } from '../Entity/Comment'
 import { Request } from 'express'
 import { ResetPasswordDto } from '../Dto/Auth/ResetPassword.Dto'
+import { Post } from '../Entity/Post'
 
 // User-related types.
 export type LoggedInUserData = {
@@ -78,6 +79,10 @@ export type CommentServiceResponse<T> = {
   status: number
   response: string
   data?: T
+  pageNumber?: number
+  pageSize?: number
+  totalCommentsCount?: number
+  remainingCommentsCount?: number
 }
 
 export interface CommentsDbResponse extends Comment {
@@ -89,4 +94,14 @@ export type CategoryServiceResponse<T> = {
   status: number
   response?: string
   data?: T
+}
+
+export type PostWithCommentsResponse = {
+  status: number
+  response: string
+  data: Post | null
+  commentsPageNumber?: number
+  commentsPageSize?: number
+  commentsTotalCount?: number
+  commentsRemainingCount?: number
 }

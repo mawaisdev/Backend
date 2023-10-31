@@ -5,6 +5,7 @@ import { InternalServerErrorResponse } from '../Helpers/Category/Category.Helper
 import { CommentService } from './Comment.Service'
 import { DateTime } from 'luxon'
 import { region } from '../Utils/Constants'
+import { PostWithCommentsResponse } from './types'
 
 type getAllPostsType = {
   status: number
@@ -62,7 +63,11 @@ export class PostService {
     await this.postRepository.remove(post)
     return { status: 200, response: 'Post deleted Successfully', data: post }
   }
-  async getPostById(postId: string, userId?: number) {
+
+  async getPostById(
+    postId: string,
+    userId?: number
+  ): Promise<PostWithCommentsResponse> {
     try {
       const post = await this.postRepository
         .createQueryBuilder('post')
@@ -85,9 +90,12 @@ export class PostService {
         .where('post.id = :postId', { postId: Number(postId) })
         .getOne()
 
+      // Fetch the first 10 comments by default
       const comments = await this.commentService.getCommentsForPost(
         Number(postId),
-        null
+        null,
+        1, // Assuming the first page
+        10 // Fetch the first 10 comments
       )
       if (!post) {
         return { status: 404, response: 'Post Not Found', data: null }
@@ -100,6 +108,10 @@ export class PostService {
           status: 200,
           response: 'Post Fetched Successfully',
           data: post,
+          commentsPageNumber: comments.pageNumber,
+          commentsPageSize: comments.pageSize,
+          commentsTotalCount: comments.totalCommentsCount,
+          commentsRemainingCount: comments.remainingCommentsCount,
         }
       }
 
@@ -121,7 +133,7 @@ export class PostService {
       return { status: 403, response: 'Access Denied', data: null }
     } catch (error) {
       console.log('Post Service Error: ', error)
-      return InternalServerErrorResponse()
+      return { status: 500, response: 'Internal Server Error.', data: null }
     }
   }
 

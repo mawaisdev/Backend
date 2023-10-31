@@ -288,10 +288,24 @@ export const getPostById = async (req: ExtendedRequest, res: Response) => {
      * If the user is not authenticated, fetch the post without any user-specific details.
      */
     if (!user) {
-      const { data, response, status } = await postService.getPostById(id)
-      return res
-        .status(status)
-        .json({ status, response, data: data ? data : null })
+      const {
+        commentsPageNumber,
+        commentsPageSize,
+        commentsTotalCount,
+        commentsRemainingCount,
+        data,
+        response,
+        status,
+      } = await postService.getPostById(id)
+      return res.status(status).json({
+        status: status,
+        response: response,
+        data: data ? data : null,
+        commentsPageNumber,
+        commentsPageSize,
+        commentsTotalCount,
+        commentsRemainingCount,
+      })
     }
 
     /**
