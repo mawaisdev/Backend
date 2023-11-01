@@ -194,7 +194,7 @@ export class CommentController {
 
       // Define the page and perPage values for pagination.
       const page = Number(req.query.page) || 1 // Default to page 1 if not provided.
-      const perPage = Number(req.query.perPage) || 10 // Default to 10 comments per page if not provided.
+      const perPage = Number(req.query.perPage) || 5 // Default to 5 comments per page if not provided.
 
       const {
         response,
@@ -211,17 +211,15 @@ export class CommentController {
         perPage // Pass the perPage value.
       )
 
-      return res
-        .status(status)
-        .json({
-          status,
-          response,
-          data: data ? data : null,
-          totalCommentsCount,
-          remainingCommentsCount,
-          pageNumber,
-          pageSize,
-        })
+      return res.status(status).json({
+        status,
+        response,
+        data: data ? data : null,
+        totalCommentsCount,
+        remainingCommentsCount,
+        pageNumber,
+        pageSize,
+      })
     } catch (error) {
       console.log('Comment Controller Error: ', error)
       return res

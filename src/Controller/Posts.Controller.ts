@@ -301,10 +301,10 @@ export const getPostById = async (req: ExtendedRequest, res: Response) => {
         status: status,
         response: response,
         data: data ? data : null,
-        commentsPageNumber,
-        commentsPageSize,
-        commentsTotalCount,
-        commentsRemainingCount,
+        pageNumber: commentsPageNumber,
+        pageSize: commentsPageSize,
+        totalCommentsCount: commentsTotalCount,
+        remainingCommentsCount: commentsRemainingCount,
       })
     }
 

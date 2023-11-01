@@ -309,6 +309,7 @@ export class CommentService {
       .groupBy('comment.id') // Group by comment ID to cater for the COUNT function.
       .offset(offset) // Offset for pagination.
       .limit(limit) // Limit the number of comments per page.
+      .orderBy('comment.createdAt', 'DESC') // Order by creation date (newest first
       .getRawMany() // Fetch raw data (not entity instances) and get multiple records.
   }
 }

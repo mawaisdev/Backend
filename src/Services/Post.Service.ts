@@ -95,7 +95,7 @@ export class PostService {
         Number(postId),
         null,
         1, // Assuming the first page
-        10 // Fetch the first 10 comments
+        5 // Fetch the first 5 comments
       )
       if (!post) {
         return { status: 404, response: 'Post Not Found', data: null }
