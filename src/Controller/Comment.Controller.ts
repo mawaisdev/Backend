@@ -66,7 +66,7 @@ export class CommentController {
 
       if (status === 201) {
         const result = {
-          comment_Id: data?.id,
+          comment_id: data?.id,
           comment_text: data?.text,
           childCount: 0,
           hasChild: false,
