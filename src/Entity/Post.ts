@@ -60,9 +60,7 @@ export class Post {
   @JoinColumn({ name: 'categoryId' }) // This ensures that the relation uses the categoryId column
   category: Category
 
-  @OneToMany(() => Comment, (comment) => comment.post, {
-    onDelete: 'CASCADE', // Delete comments when the post is deleted
-  })
+  @OneToMany(() => Comment, (comment) => comment.post)
   comments: Comment[]
 
   // You can still add other fields like created at, updated at, etc.
