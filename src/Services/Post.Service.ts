@@ -79,6 +79,7 @@ export class PostService {
           'post.updatedAt',
           'post.isDraft',
           'post.isPrivate',
+          'post.imageUrl',
           'user.id',
           'user.userName',
           'user.email',
