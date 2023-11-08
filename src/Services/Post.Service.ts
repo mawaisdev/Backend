@@ -179,7 +179,7 @@ export class PostService {
     try {
       const posts = await this.postRepository.find({
         where: { userId },
-        relations: ['category', 'user'],
+        relations: ['category'],
       })
       return {
         status: 200,
