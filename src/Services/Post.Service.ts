@@ -156,8 +156,10 @@ export class PostService {
       post.title = title
       if (categoryId) post.categoryId = categoryId
       if (imageUrl) post.imageUrl = imageUrl
-      if (isDraft) post.isDraft = isDraft
-      if (isPrivate) post.isPrivate = isPrivate
+      post.isDraft = isDraft && isDraft ? true : false
+      post.isPrivate = isPrivate && isPrivate ? true : false
+      // if (isDraft) post.isDraft = isDraft
+      // if (isPrivate) post.isPrivate = isPrivate
       post.updatedAt = DateTime.now().setZone(region).toJSDate()
       await this.postRepository.save(post)
       return {

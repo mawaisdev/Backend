@@ -8,7 +8,10 @@ import { UserRole } from '../Config/UserRoles'
 import { AppDataSource } from '../data-source'
 
 // 4. Types and interfaces
-import { ExtendedRequest } from '../Services/types'
+import { ExtendedRequest, LoggedInUserData } from '../Services/types'
+
+import jwt from 'jsonwebtoken'
+const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || ''
 
 // 5. Entities or models
 import { Post } from '../Entity/Post'
@@ -282,6 +285,19 @@ export const getPostById = async (req: ExtendedRequest, res: Response) => {
     /**
      * Extract user information from the request object.
      */
+    const token = req.cookies.jwt
+    if (token && REFRESH_TOKEN_SECRET) {
+      // Verify the JWT's integrity and authenticity.
+      jwt.verify(
+        token,
+        REFRESH_TOKEN_SECRET,
+        async (error: any, decoded: any) => {
+          // Attach the decoded JWT payload to the request object for use in subsequent middlewares/routes.
+          if (error) console.error(error)
+          req.user = decoded as LoggedInUserData
+        }
+      )
+    }
     const user = req.user
 
     /**
@@ -311,17 +327,28 @@ export const getPostById = async (req: ExtendedRequest, res: Response) => {
     /**
      * If the user is authenticated, fetch the post with potential user-specific details.
      */
-    const { data, response, status } = await postService.getPostById(
-      id,
-      user.id
-    )
+    const {
+      commentsPageNumber,
+      commentsPageSize,
+      commentsTotalCount,
+      commentsRemainingCount,
+      data,
+      response,
+      status,
+    } = await postService.getPostById(id, user.id)
 
     /**
      * Return the fetched post data.
      */
-    return res
-      .status(status)
-      .json({ status, response, data: data ? data : null })
+    return res.status(status).json({
+      status: status,
+      response: response,
+      data: data ? data : null,
+      pageNumber: commentsPageNumber,
+      pageSize: commentsPageSize,
+      totalCommentsCount: commentsTotalCount,
+      remainingCommentsCount: commentsRemainingCount,
+    })
   } catch (error) {
     /**
      * Log any unexpected errors and return a server error response.
