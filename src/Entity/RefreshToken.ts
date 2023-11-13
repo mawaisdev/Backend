@@ -27,6 +27,8 @@ export class RefreshToken {
   @Index()
   token: string
 
-  @ManyToOne(() => User, (user) => user.refreshTokens)
+  @ManyToOne(() => User, (user) => user.refreshTokens, {
+    onDelete: 'CASCADE',
+  })
   user: User
 }

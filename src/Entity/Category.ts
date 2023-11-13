@@ -29,7 +29,9 @@ export class Category {
   @Column({ nullable: true })
   updatedById: number
 
-  @ManyToOne((type) => User, (user) => user.categories)
+  @ManyToOne((type) => User, (user) => user.categories, {
+    onDelete: 'SET NULL',
+  })
   createdBy: User
 
   @OneToMany(() => Post, (post) => post.category)
