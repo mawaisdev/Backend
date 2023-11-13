@@ -91,6 +91,39 @@ export const getAllPosts = async (req: Request, res: Response) => {
   }
 }
 
+export const getllPostsForAuth = async (
+  req: ExtendedRequest,
+  res: Response
+) => {
+  try {
+    /**
+     * Obtain post and comment repositories from the data source.
+     */
+    const postRepository = AppDataSource.getRepository(Post)
+    const commentRepository = AppDataSource.getRepository(Comment)
+
+    /**
+     * Initialize comment and post services with the respective repositories.
+     */
+    const commentService = new CommentService(commentRepository, postRepository)
+    const postService = new PostService(postRepository, commentService)
+
+    /**
+     * Extract the post ID from the request parameters.
+     */
+    const user = req.user
+
+    if (!user) return res.status(401)
+
+    const { status, response, data } = await postService.getAllPostsbyUserId(
+      user.id
+    )
+    return res
+      .status(status)
+      .json({ status, response, data: data ? data : null })
+  } catch (error) {}
+}
+
 /**
  * Add a new post.
  *
@@ -356,40 +389,6 @@ export const getPostById = async (req: ExtendedRequest, res: Response) => {
     console.log('Post Controller Error: ', error)
     return InternalServerErrorResponse()
   }
-}
-
-export const getllPostsForAuth = async (
-  req: ExtendedRequest,
-  res: Response
-) => {
-  try {
-    /**
-     * Obtain post and comment repositories from the data source.
-     */
-    const postRepository = AppDataSource.getRepository(Post)
-    const commentRepository = AppDataSource.getRepository(Comment)
-
-    /**
-     * Initialize comment and post services with the respective repositories.
-     */
-    const commentService = new CommentService(commentRepository, postRepository)
-    const postService = new PostService(postRepository, commentService)
-
-    /**
-     * Extract the post ID from the request parameters.
-     */
-    const { id } = req.params
-    const user = req.user
-
-    if (!user) return res.status(401)
-
-    const { status, response, data } = await postService.getAllPostsbyUserId(
-      user.id
-    )
-    return res
-      .status(status)
-      .json({ status, response, data: data ? data : null })
-  } catch (error) {}
 }
 
 /**

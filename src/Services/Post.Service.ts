@@ -177,10 +177,30 @@ export class PostService {
 
   async getAllPostsbyUserId(userId: number) {
     try {
-      const posts = await this.postRepository.find({
-        where: { userId },
-        relations: ['category'],
-      })
+      const posts = await this.postRepository
+        .createQueryBuilder('post')
+        .select([
+          'post.id',
+          'post.title',
+          'post.body',
+          'post.createdAt',
+          'post.updatedAt',
+          'post.imageUrl',
+          'post.isDraft',
+          'post.isPrivate',
+          'category.id',
+          'category.name', // Selecting only the 'name' field from 'category'
+          'user.id',
+          'user.userName',
+          'user.email',
+          'user.role',
+        ])
+        .leftJoin('post.category', 'category') // Use leftJoin instead of leftJoinAndSelect
+        .leftJoin('post.user', 'user') // Use leftJoin instead of leftJoinAndSelect
+        .where('post.userId = :userId', { userId: userId })
+        // .where('post.isPrivate = :isPrivate', { isPrivate: true })
+        // .orWhere('post.isDraft = :isDraft', { isDraft: true })
+        .getMany()
       return {
         status: 200,
         response: 'Posts Fetched Successfully',
@@ -230,6 +250,8 @@ export class PostService {
         'post.createdAt',
         'post.updatedAt',
         'post.imageUrl',
+        'post.isDraft',
+        'post.isPrivate',
         'category.id',
         'category.name', // Selecting only the 'name' field from 'category'
         'user.id',
