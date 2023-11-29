@@ -91,7 +91,7 @@ export const getAllPosts = async (req: Request, res: Response) => {
   }
 }
 
-export const getllPostsForAuth = async (
+export const getAllPostsForAuth = async (
   req: ExtendedRequest,
   res: Response
 ) => {

@@ -4,7 +4,7 @@ import { categoryRouter } from './Category.Routes'
 import { commentRouter } from './Comment.Route'
 import { postRouter } from './Post.Routes'
 import { profileRouter } from './Profile.Routes'
-import { getllPostsForAuth } from '../Controller/Posts.Controller'
+import { getAllPostsForAuth } from '../Controller/Posts.Controller'
 
 const privateRouter = express.Router()
 
@@ -12,7 +12,7 @@ const privateRouter = express.Router()
 privateRouter.use(verifyJWT)
 
 // Routes for posts.
-privateRouter.route('/myposts').get(getllPostsForAuth)
+privateRouter.route('/myposts').get(getAllPostsForAuth)
 privateRouter.use('/posts', postRouter)
 
 // Routes for Profile

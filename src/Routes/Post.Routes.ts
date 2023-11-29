@@ -5,7 +5,7 @@ import {
   deletePost,
   getPostById,
   updatePost,
-  getllPostsForAuth,
+  getAllPostsForAuth,
 } from '../Controller/Posts.Controller'
 import { validateId } from '../Middleware/ValidateId'
 
