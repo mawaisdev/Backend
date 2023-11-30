@@ -13,7 +13,8 @@
     "strictPropertyInitialization": false,
     "strict": true,
     "strictNullChecks": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "lib": ["ES2018", "ES2018.AsyncIterable"]
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]
