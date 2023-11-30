@@ -14,27 +14,34 @@ import { UserRole } from '../Config/UserRoles'
 import { Category } from './Category'
 import { Post } from './Post'
 import { Comment } from './Comment'
+import { Field, Int, ObjectType } from 'type-graphql'
 
 @Entity('Users')
+@ObjectType()
 export class User {
+  @Field(() => Int)
   @PrimaryGeneratedColumn()
   id: number
 
   @Column({ length: 20 })
+  @Field(() => String, { nullable: false })
   @IsNotEmpty()
   @MaxLength(20)
   firstName: string
 
   @Column()
+  @Field(() => String, { nullable: true })
   @IsNotEmpty()
   lastName: string
 
   @Column()
+  @Field(() => String, { nullable: false })
   @IsNotEmpty()
   @IsAlphanumeric()
   userName: string
 
   @Column()
+  @Field(() => String, { nullable: false })
   @IsNotEmpty()
   @IsEmail()
   email: string
@@ -45,10 +52,12 @@ export class User {
   password: string
 
   @Column({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsOptional()
   profilePicture: string
 
   @Column({ length: 300, nullable: true })
+  @Field(() => String, { nullable: true })
   @IsOptional()
   @MaxLength(300)
   bio: string
