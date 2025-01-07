@@ -153,4 +153,3 @@ For any other request format.
 | 200         | OK                    | The category was successfully deleted. |
 | 404         | Not Found             | The category was not found.            |
 | 500         | Internal Server Error | An unexpected server error occurred.   |
-
