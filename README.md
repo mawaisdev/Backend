@@ -1,6 +1,8 @@
 ## Node JS Project with TypeScript and TYPE ORM
 
 ## Setup for Debugging with `ngrok`
+It will help you to test application on Mobiles
+You can also use Ports offered by VS Code instead of setting up ngrok
 
 To use the provided launch settings, you'll need to set up `ngrok` and configure a few things:
 
